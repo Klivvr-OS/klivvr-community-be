@@ -4,11 +4,11 @@ export class HelloService {
   constructor(private helloRepo: HelloRepo) {}
 
   async createOne(message: string) {
-    return await this.helloRepo.create(message);
+    return await this.helloRepo.createOne(message);
   }
 
   async findMany() {
-    return await this.helloRepo.findAll();
+    return await this.helloRepo.findMany();
   }
 }
 
