@@ -1,23 +1,15 @@
-import { helloRepo,HelloRepo } from "../repos/helloRepo";
+import { helloRepo, HelloRepo } from "../repos/helloRepo";
 
 export class HelloService {
-    constructor(private helloRepo: HelloRepo){}
+  constructor(private helloRepo: HelloRepo) {}
 
-    async createOne(message: string){
-        try{
-            return await this.helloRepo.create(message);
-        } catch (error) {
-            throw new Error('Error creating hello object in service layer');
-        }
-    }
+  async createOne(message: string) {
+    return await this.helloRepo.create(message);
+  }
 
-    async findMany(){
-        try{
-            return await this.helloRepo.findAll();
-        } catch (error) {
-            throw new Error('Error getting all hello objects in service layer');
-        }
-    }
+  async findMany() {
+    return await this.helloRepo.findAll();
+  }
 }
 
 export const helloService = new HelloService(helloRepo);

@@ -1,30 +1,20 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../../../database/prisma/client";
 
-
 export class HelloRepo {
+  constructor(private prisma: PrismaClient) {}
 
-    constructor(private prisma: PrismaClient){}
+  async create(message: string) {
+    return await prisma.hello.create({
+      data: {
+        message,
+      },
+    });
+  }
 
-    async create(message: string){
-        try{
-            return await prisma.hello.create({
-                data: {
-                    message
-                }
-            });
-        } catch (error) {
-            throw new Error('Error creating hello object in repo layer')
-        }
-    }
-
-    async findAll(){
-        try{
-            return await prisma.hello.findMany();
-        } catch (error) {
-            throw new Error('Error getting all hello objects in repo layer')
-        }
-    }
+  async findAll() {
+    return await prisma.hello.findMany();
+  }
 }
 
 export const helloRepo = new HelloRepo(prisma);
