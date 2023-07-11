@@ -20,8 +20,8 @@ These instructions will get you a copy of the project up and running on your loc
 https://github.com/Klivvr-OS/klivvr-community-be.git
 ```
 
-2. Install [required packages]() `npm install`
-3. Configure the [environment variables](), such as the database URL.
+2. Install [required packages](https://github.com/Klivvr-OS/klivvr-community-be/blob/main/package.json) `npm install`
+3. Configure the [environment variables](https://github.com/Klivvr-OS/klivvr-community-be/blob/main/.env.test), such as the database URL.
 4. `npm run build` then `npm run start`
 
 ## Folder Structure
