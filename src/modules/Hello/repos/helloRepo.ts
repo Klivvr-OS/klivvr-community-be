@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-import prisma from "../../../database/prisma/client";
+import { type PrismaClient } from '@prisma/client';
+import prisma from '../../../database/prisma/client';
 
 export class HelloRepo {
-  constructor(private prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaClient) {}
 
   async createOne(message: string) {
     return await prisma.hello.create({

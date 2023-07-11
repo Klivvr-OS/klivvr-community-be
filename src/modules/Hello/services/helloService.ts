@@ -1,7 +1,7 @@
-import { helloRepo, HelloRepo } from "../repos/helloRepo";
+import { helloRepo, type HelloRepo } from '../repos/helloRepo';
 
 export class HelloService {
-  constructor(private helloRepo: HelloRepo) {}
+  constructor(private readonly helloRepo: HelloRepo) {}
 
   async createOne(message: string) {
     return await this.helloRepo.createOne(message);
