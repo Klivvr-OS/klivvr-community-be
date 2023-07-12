@@ -28,6 +28,7 @@ https://github.com/Klivvr-OS/klivvr-community-be.git
 
 - package.json
 - .gitignore
+- .prettierrc
 - tsconfig
 - .eslintrc => Eslint + Prettier
 - .env (not committed)
