@@ -32,9 +32,20 @@ model User {
   Role           Role     @default(USER)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  posts          Post[]
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  description String
+  photoURL    String?
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
