@@ -19,9 +19,17 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
-  const { id } = req.params;
-  const postObject = await postService.findOne(Number(id));
-  res.status(200).json(postObject);
+  try {
+    const { id } = req.params;
+    const postObject = await postService.findOne(Number(id));
+    res.status(200).json(postObject);
+  } catch (error: any) {
+    if (error instanceof Error) {
+      res.status(404).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: 'An unexpected error occurred' });
+    }
+  }
 });
 
 export default router;
