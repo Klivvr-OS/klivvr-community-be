@@ -10,7 +10,7 @@ import Joi from 'joi';
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
 
-  private async validateUserData(req: Request): Promise<void> {
+  private async validateUserData(req: Request): Promise<UserType> {
     const regex = /^[A-Za-z0-9._%+-]+@klivvr\.com$/;
     const schema = Joi.object({
       firstName: Joi.string().min(3).max(30).trim().required().messages({
@@ -28,17 +28,17 @@ export class UserService {
     });
 
     try {
-      await schema.validateAsync(req.body);
+      return await schema.validateAsync(req.body);
     } catch (error: any) {
       throw new ErrorFactory(error.message, 400);
     }
   }
 
   async createOne(req: Request): Promise<UserType> {
-    await this.validateUserData(req);
+    const validatedData: UserType = await this.validateUserData(req);
 
     try {
-      const { firstName, lastName, email, password } = req.body;
+      const { firstName, lastName, email, password } = validatedData;
       const user: User = {
         firstName,
         lastName,
