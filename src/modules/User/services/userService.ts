@@ -4,6 +4,7 @@ import { type User } from '../types/register';
 import { type Request } from 'express';
 import sendGridEmail from '../../../mailers/sendEmail';
 import { generateVerificationCode } from '../../../helpers/verificationCode';
+import { ErrorFactory } from '../../../helpers/errorFactory';
 import Joi from 'joi';
 
 export class UserService {
@@ -29,7 +30,7 @@ export class UserService {
     try {
       await schema.validateAsync(req.body);
     } catch (error: any) {
-      throw new Error(error);
+      throw new ErrorFactory(error.message, 400);
     }
   }
 
@@ -64,7 +65,7 @@ export class UserService {
       );
       return createdUser;
     } catch (error: any) {
-      throw new Error(error);
+      throw new ErrorFactory(error.message, 409);
     }
   }
 
@@ -73,7 +74,7 @@ export class UserService {
       const user = await this.userRepo.findOneByEmail(email);
       return user;
     } catch (error: any) {
-      throw new Error(error);
+      throw new ErrorFactory(error.message, 404);
     }
   }
 }
