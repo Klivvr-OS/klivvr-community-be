@@ -1,4 +1,4 @@
-import { type PrismaClient } from '@prisma/client';
+import { type PrismaClient, type User as UserType } from '@prisma/client';
 import prisma from '../../../database/client';
 import { type User } from '../types/register';
 
@@ -10,7 +10,7 @@ export class UserRepo {
     lastName,
     email,
     password,
-  }: User): Promise<any> {
+  }: User): Promise<UserType> {
     return await this.prisma.user.create({
       data: {
         firstName,
@@ -21,7 +21,7 @@ export class UserRepo {
     });
   }
 
-  async findOneByEmail(email: string): Promise<any> {
+  async findOneByEmail(email: string): Promise<UserType | null> {
     return await this.prisma.user.findUnique({
       where: {
         email,
@@ -29,7 +29,7 @@ export class UserRepo {
     });
   }
 
-  async updateOne(email: string, verificationCode: string): Promise<any> {
+  async updateOne(email: string, verificationCode: string): Promise<UserType> {
     return await this.prisma.user.update({
       where: {
         email,
