@@ -27,5 +27,7 @@ module.exports = {
       'error',
       { vars: 'all', args: 'after-used', ignoreRestSiblings: false },
     ],
+    'no-explicit-any': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
   },
 };
