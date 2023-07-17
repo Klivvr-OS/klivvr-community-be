@@ -1,4 +1,5 @@
 import { userRepo, type UserRepo } from '../repos/userRepo';
+import { type User as UserType } from '@prisma/client';
 import { type User } from '../types/register';
 import { type Request } from 'express';
 import sendGridEmail from '../../../mailers/sendEmail';
@@ -8,18 +9,21 @@ import Joi from 'joi';
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
 
-  private async validateUserData(req: Request): Promise<any> {
+  private async validateUserData(req: Request): Promise<void> {
+    const regex = /^[A-Za-z0-9._%+-]+@klivvr\.com$/;
     const schema = Joi.object({
-      firstName: Joi.string().min(3).max(30).required(),
-      lastName: Joi.string().min(3).max(30).required(),
-      email: Joi.string()
-        .regex(/^[A-Za-z0-9._%+-]+@klivvr\.com$/)
-        .required()
-        .messages({
-          'string.pattern.base': `Email must be a valid Klivvr email`,
-        }),
-      password: Joi.string().min(8).max(30).required(),
-      confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+      firstName: Joi.string().min(3).max(30).trim().required().messages({
+        'string.pattern.base': `First name must be at least 3 characters long`,
+      }),
+      lastName: Joi.string().min(3).max(30).trim().required().messages({
+        'string.pattern.base': `Last name must be at least 3 characters long`,
+      }),
+      email: Joi.string().regex(regex).lowercase().trim().required().messages({
+        'string.pattern.base': `Email must be a valid Klivvr email`,
+      }),
+      password: Joi.string().min(8).max(30).trim().required().messages({
+        'string.pattern.base': `Password must be at least 8 characters long`,
+      }),
     });
 
     try {
@@ -29,7 +33,7 @@ export class UserService {
     }
   }
 
-  async createOne(req: Request): Promise<any> {
+  async createOne(req: Request): Promise<UserType> {
     await this.validateUserData(req);
 
     try {
@@ -40,12 +44,12 @@ export class UserService {
         email,
         password,
       };
-      const existingUser: boolean = await this.userRepo.findOneByEmail(email);
-      if (existingUser) {
+      const existingUser = await this.userRepo.findOneByEmail(email);
+      if (existingUser != null) {
         throw new Error('User already exists');
       }
       const createdUser = await this.userRepo.createOne(user);
-      const code: string = await generateVerificationCode();
+      const code: string = generateVerificationCode();
       await sendGridEmail(
         createdUser.email,
         'Welcome to Klivvr',
@@ -53,15 +57,18 @@ export class UserService {
         `<h1>Welcome to Klivvr</h1><p>Thank you for registering with Klivvr. Here is your verification code ${code},
         `,
       );
-      createdUser.verifyCode = code;
-      await this.userRepo.updateOne(createdUser.email, createdUser.verifyCode);
+      createdUser.verificationCode = code;
+      await this.userRepo.updateOne(
+        createdUser.email,
+        createdUser.verificationCode,
+      );
       return createdUser;
     } catch (error: any) {
       throw new Error(error);
     }
   }
 
-  async findOneByEmail(email: string): Promise<any> {
+  async findOneByEmail(email: string): Promise<UserType | null> {
     try {
       const user = await this.userRepo.findOneByEmail(email);
       return user;
