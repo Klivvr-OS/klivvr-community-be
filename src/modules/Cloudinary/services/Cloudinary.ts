@@ -1,9 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { unlinkSync } from 'fs';
 
-import { ICloudinary, ICloudinaryResponse } from '../types/Cloudinary';
-
-export class Cloudinary implements ICloudinary {
+export class Cloudinary {
   constructor() {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,7 +10,7 @@ export class Cloudinary implements ICloudinary {
     });
   }
 
-  uploadImage = async (imageToUpload: string): Promise<ICloudinaryResponse> => {
+  async uploadImage (imageToUpload: string) {
     try {
       const cloudinaryImageUploadResponseData =
         await cloudinary.uploader.upload(imageToUpload, {
@@ -48,3 +46,5 @@ export class Cloudinary implements ICloudinary {
     }
   };
 }
+
+export const cloudinaryInstance = new Cloudinary();
