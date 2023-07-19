@@ -1,6 +1,5 @@
 import sendGrid from '@sendgrid/mail';
 import { sendGridAPIKey, sendGridFromEmail } from '../config';
-import { type ISendVerificationEmail as sendGridType } from '../mailers/types/sendEmail';
 
 sendGrid.setApiKey(sendGridAPIKey);
 
@@ -10,7 +9,7 @@ export async function sendEmail(
   text: string,
   html: string,
 ) {
-  const msg: sendGridType = {
+  const msg = {
     to,
     from: sendGridFromEmail,
     subject,
