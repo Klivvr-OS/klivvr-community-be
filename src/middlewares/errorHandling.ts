@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-export class ErrorHandler extends Error {
+export class CustomError extends Error {
   status: number;
   constructor(message: string, status: number) {
     super(message);
@@ -14,7 +14,7 @@ export const errorHandlerMiddleware = (
   res: Response,
   _next: NextFunction,
 ) => {
-  if (err instanceof ErrorHandler) {
+  if (err instanceof CustomError) {
     const statusCode = err.status;
     const message = err.message;
 
