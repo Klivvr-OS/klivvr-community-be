@@ -1,8 +1,4 @@
-import {
-  Prisma,
-  type PrismaClient,
-  type User as UserType,
-} from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 import prisma from '../../../database/client';
 
 export class UserRepo {
@@ -19,7 +15,7 @@ export class UserRepo {
   async updateOne(
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
-  ): Promise<UserType> {
+  ) {
     return await this.prisma.user.update({
       where: query,
       data: args,
