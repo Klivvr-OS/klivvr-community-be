@@ -28,6 +28,9 @@ export class UserService {
       `Welcome to Klivvr Thank you for registering with Klivvr. Here is your verification code ${code}`,
       `<h1>Welcome to Klivvr</h1><p>Thank you for registering with Klivvr. Here is your verification code ${code}</p>`,
     );
+    if (createdUser == null) {
+      throw new CustomError('Internal Server Error', 500);
+    }
     return createdUser;
   }
 
