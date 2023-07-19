@@ -1,7 +1,7 @@
 import { postService } from '../modules';
 import express from 'express';
-import { multerUpload } from '../modules/Cloudinary/utils/multer';
-import { cloudinaryInstance } from '../modules/Cloudinary/services';
+import { multerUpload } from '../middleware/multer';
+import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
 
