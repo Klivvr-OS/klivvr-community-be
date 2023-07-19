@@ -9,7 +9,7 @@ export async function sendEmail(
   subject: string,
   text: string,
   html: string,
-): Promise<void> {
+) {
   const msg: sendGridType = {
     to,
     from: sendGridFromEmail,
