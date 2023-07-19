@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { unlinkSync } from 'fs';
 
-import { ICloudinary, ICloudinaryResponse } from '../../types/Cloudinary';
+import { ICloudinary, ICloudinaryResponse } from '../types/Cloudinary';
 
 export class Cloudinary implements ICloudinary {
   constructor() {

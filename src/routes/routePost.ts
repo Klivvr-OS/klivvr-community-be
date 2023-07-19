@@ -1,7 +1,7 @@
 import { postService } from '../modules';
 import express from 'express';
-import { multerUpload } from '../utils/multer';
-import { cloudinaryInstance } from '../services/Cloudinary';
+import { multerUpload } from '../modules/Cloudinary/utils/multer';
+import { cloudinaryInstance } from '../modules/Cloudinary/services';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.post('/', multerUpload.single('image'), async (req, res) => {
   const userId = Number(req.body.userId);
   const { isSuccess, message, statusCode, imageURL } =
     await cloudinaryInstance.uploadImage(localFilePath);
-  const { description } = req.body;
+  const { description, photoURL } = req.body;
   const newpostObject = await postService.createOne({
     description,
     photoURL: imageURL,
