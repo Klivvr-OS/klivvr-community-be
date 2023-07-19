@@ -1,6 +1,6 @@
 import sendGrid from '@sendgrid/mail';
 import { sendGridAPIKey, sendGridFromEmail } from '../config';
-import { type sendVerificationEmail as sendGridType } from '../mailers/types/sendEmail';
+import { type ISendVerificationEmail as sendGridType } from '../mailers/types/sendEmail';
 
 sendGrid.setApiKey(sendGridAPIKey);
 

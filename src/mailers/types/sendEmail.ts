@@ -1,4 +1,4 @@
-export interface sendVerificationEmail {
+export interface ISendVerificationEmail {
   to: string;
   from: string;
   subject: string;
