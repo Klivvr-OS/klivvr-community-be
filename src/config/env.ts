@@ -1,5 +1,5 @@
-function env(name: string, required?: true): string;
-function env(name: string, required: false): string | undefined;
+function env(name: string, required?: boolean): string;
+function env(name: string, required: boolean): string | undefined;
 function env(name: string, required = true): string | undefined {
   const envVar = process.env[name];
   if (required && envVar === undefined) {
