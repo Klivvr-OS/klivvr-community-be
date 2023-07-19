@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import sendGridEmail from '../../../mailers/sendEmail';
 import { generateVerificationCode } from '../../../helpers/verificationCode';
 import { CustomError } from '../../../middlewares';
+import bcrypt from 'bcryptjs';
 
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
@@ -15,8 +16,10 @@ export class UserService {
       throw new CustomError('User already exists', 409);
     }
     const code = generateVerificationCode();
+    const hashedPassword = await bcrypt.hash(args.password, 12);
     const createdUser = await this.userRepo.createOne({
       ...args,
+      password: hashedPassword,
       verificationCode: code,
     });
     await sendGridEmail(
