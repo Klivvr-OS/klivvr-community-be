@@ -2,22 +2,25 @@ import { postService } from '../modules';
 import express from 'express';
 import { multerUpload } from '../middleware/multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
+import { handleMulterError } from '../middleware/multer/Multer';
+import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
 
-router.post('/', multerUpload.single('image'), async (req, res) => {
-  const localFilePath = req.file?.path || '';
-  const userId = Number(req.body.userId);
-  const { isSuccess, message, statusCode, imageURL } =
-    await cloudinaryInstance.uploadImage(localFilePath);
-  const { description, photoURL } = req.body;
-  const newpostObject = await postService.createOne({
-    description,
-    photoURL: imageURL,
-    userId,
-  });
-  res.status(201).json(newpostObject);
-});
+router.post('/', multerUpload.single('image'), handleMulterError, async (req: Request, res: Response) => {
+    const localFilePath = req.file?.path || '';
+    const userId = Number(req.body.userId);
+    const { isSuccess, message, statusCode, imageURL } =
+      await cloudinaryInstance.uploadImage(localFilePath);
+    const { description, photoURL } = req.body;
+    const newpostObject = await postService.createOne({
+      description,
+      photoURL: imageURL,
+      userId,
+    });
+    res.status(201).json(newpostObject);
+  },
+);
 
 router.get('/', async (req, res) => {
   const postObjects = await postService.findMany();
