@@ -20,7 +20,7 @@ export async function sendEmail(
 
   try {
     await sendGrid.send(msg);
-  } catch (err: any) {
+  } catch (err: unknown) {
     throw new Error(`Error sending email`);
   }
 }
