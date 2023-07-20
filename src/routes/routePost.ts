@@ -7,12 +7,19 @@ import { Request, Response, NextFunction } from 'express';
 
 const router = express.Router();
 
-router.post('/', multerUpload.single('image'), handleMulterError, async (req: Request, res: Response) => {
-    const localFilePath = req.file?.path || '';
+router.post(
+  '/',
+  multerUpload.single('image'),
+  handleMulterError,
+  async (req: Request, res: Response) => {
+    let imageURL: string | undefined;
+    if (req.file) {
+      const localFilePath = req.file.path;
+      const { isSuccess, message, statusCode, imageURL: uploadedImageURL } = await cloudinaryInstance.uploadImage(localFilePath);
+      imageURL = uploadedImageURL;
+    }
     const userId = Number(req.body.userId);
-    const { isSuccess, message, statusCode, imageURL } =
-      await cloudinaryInstance.uploadImage(localFilePath);
-    const { description, photoURL } = req.body;
+    const { description } = req.body;
     const newpostObject = await postService.createOne({
       description,
       photoURL: imageURL,
