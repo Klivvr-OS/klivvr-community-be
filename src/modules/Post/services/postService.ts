@@ -16,14 +16,16 @@ export class PostService {
     return await this.postRepo.findOne(query);
   }
 
-  async updateOne(query: Prisma.PostWhereUniqueInput, args: Prisma.PostUpdateInput) {
+  async updateOne(
+    query: Prisma.PostWhereUniqueInput,
+    args: Prisma.PostUpdateInput,
+  ) {
     return await this.postRepo.updateOne(query, args);
   }
 
   async deleteOne(query: Prisma.PostWhereUniqueInput) {
     return await this.postRepo.deleteOne(query);
   }
-
 }
 
 export const postService = new PostService(postRepo);

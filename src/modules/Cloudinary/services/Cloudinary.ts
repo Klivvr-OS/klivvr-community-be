@@ -1,21 +1,24 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { unlinkSync } from 'fs';
+import {
+  cloudinaryAPIKey,
+  cloudinaryCloudName,
+  cloudinaryAPISecret,
+} from '../../../config';
 
 export class Cloudinary {
   constructor() {
     cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
+      cloud_name: cloudinaryCloudName,
+      api_key: cloudinaryAPIKey,
+      api_secret: cloudinaryAPISecret,
     });
   }
 
-  async uploadImage (imageToUpload: string) {
+  async uploadImage(imageToUpload: string) {
     try {
       const cloudinaryImageUploadResponseData =
-        await cloudinary.uploader.upload(imageToUpload, {
-          public_id: process.env.CLOUDINARY_FOLDER_NAME,
-        });
+        await cloudinary.uploader.upload(imageToUpload);
 
       const { url } = cloudinaryImageUploadResponseData;
 
@@ -44,7 +47,7 @@ export class Cloudinary {
         statusCode: 500,
       };
     }
-  };
+  }
 }
 
 export const cloudinaryInstance = new Cloudinary();

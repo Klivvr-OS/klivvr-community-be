@@ -1,5 +1,5 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
-import prisma from '../../../database/prisma/client';
+import prisma from '../../../database/client';
 
 export class PostRepo {
   constructor(private readonly client: PrismaClient) {}
@@ -20,7 +20,10 @@ export class PostRepo {
     });
   }
 
-  async updateOne(query: Prisma.PostWhereUniqueInput, args: Prisma.PostUpdateInput) {
+  async updateOne(
+    query: Prisma.PostWhereUniqueInput,
+    args: Prisma.PostUpdateInput,
+  ) {
     return await this.client.post.update({
       where: query,
       data: args,
