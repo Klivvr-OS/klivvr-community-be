@@ -1,1 +1,0 @@
-export { multerUpload } from './Multer';
