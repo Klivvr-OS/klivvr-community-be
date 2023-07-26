@@ -20,15 +20,19 @@
     "@prisma/client": "^5.0.0",
     "@sendgrid/mail": "^7.7.0",
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.37.3",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "pg": "^8.11.1",
+    "jsonwebtoken": "^9.0.1",
     "multer": "^1.4.5-lts.1",
-    "cloudinary": "^1.37.3"
+    "pg": "^8.11.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/multer": "^1.4.7",
     "@types/node": "^20.4.1",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
