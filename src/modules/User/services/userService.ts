@@ -19,7 +19,7 @@ export class UserService {
       lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
       email: z.string().email({ message: 'Email must be unique' }).trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
-      photoURL: z.string().optional(),
+      photoURL: z.string(),
     })
     .required();
 
