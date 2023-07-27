@@ -25,14 +25,12 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = Number(req.body.userId); // TODO: change to req.user.id after adding token
-    const postSchema = postService.createPostSchema.parse({
-      ...req.body,
-      userId,
-      photoURL,
-    });
+    const userId = Number(req.body.userId as unknown as string);
+    const { description } = req.body;
     const newpostObject = await postService.createOne({
-      ...postSchema,
+      description,
+      photoURL,
+      userId,
     });
     res.status(201).json(newpostObject);
   }),
@@ -64,33 +62,18 @@ router.get(
 router.put(
   '/:id',
   multerUpload.single('image'),
-  handleMulterError,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
+    const { description, photoURL } = req.body;
     const posts = await postService.findOne({ id });
     if (!posts) {
       throw new CustomError('Post not found', 404);
     }
-    let photoURL;
-    if (req.file) {
-      const localFilePath = req.file.path;
-      const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
-        localFilePath,
-      );
-      if (!isSuccess) {
-        throw new Error();
-      }
-      photoURL = imageURL;
-    }
-    const updatePostSchema = postService.updatePostSchema.parse({
-      ...req.body,
-      id,
-      photoURL,
-    });
     const updatedpostObject = await postService.updateOne(
       { id },
       {
-        ...updatePostSchema,
+        description,
+        photoURL,
       },
     );
     res.status(200).json(updatedpostObject);
