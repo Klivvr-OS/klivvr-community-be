@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { ZodError } from 'zod';
 
 export class CustomError extends Error {
   status: number;
@@ -22,6 +23,21 @@ export const errorHandlerMiddleware = (
       message: message,
     });
   }
+
+  if (err instanceof ZodError) {
+    const errors = err.issues.map((issue) => {
+      return {
+        field: issue.path.join('.'),
+        message: issue.message,
+      };
+    });
+
+    return res.status(400).json({
+      message: 'Validation Error',
+      errors: errors,
+    });
+  }
+
   return res.status(500).json({
     message: 'Internal Server Error',
   });

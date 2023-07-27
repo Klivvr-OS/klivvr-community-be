@@ -4,9 +4,24 @@ import sendGridEmail from '../../../mailers/sendEmail';
 import { generateVerificationCode } from '../../../helpers/verificationCode';
 import { CustomError } from '../../../middlewares';
 import bcrypt from 'bcryptjs';
+import { z } from 'zod';
+import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
+
+  createUserSchema = z
+    .object({
+      firstName: z
+        .string()
+        .min(3, { message: 'First name is too short' })
+        .trim(),
+      lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
+      email: z.string().email({ message: 'Email must be unique' }).trim(),
+      password: z.string().min(6, { message: 'Password is too short' }).trim(),
+      photoURL: z.string(),
+    })
+    .required();
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
     const existingUser = await this.userRepo.findOne({
@@ -24,9 +39,9 @@ export class UserService {
     });
     await sendGridEmail(
       createdUser.email,
-      'Welcome to Klivvr',
-      `Welcome to Klivvr Thank you for registering with Klivvr. Here is your verification code ${code}`,
-      `<h1>Welcome to Klivvr</h1><p>Thank you for registering with Klivvr. Here is your verification code ${code}</p>`,
+      sendGridSubject,
+      sendGridText,
+      `${sendGridHTML}<br><p>Your verification code is: <strong>${code}</strong></p>`,
     );
     if (createdUser == null) {
       throw new CustomError('Internal Server Error', 500);
