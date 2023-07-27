@@ -5,6 +5,7 @@ import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
+import { secretAccessKey, secretRefreshKey } from '../config';
 
 const DAY = 24 * 60 * 60 * 1000; // 1 Day
 
@@ -21,7 +22,6 @@ router.post(
   }),
 );
 
-//Verified User
 router.post(
   '/verify',
   endpoint(async (req, res) => {
@@ -37,7 +37,6 @@ router.post(
   }),
 );
 
-//Login
 router.post(
   '/login',
   endpoint(async (req, res) => {
@@ -58,14 +57,13 @@ router.post(
   }),
 );
 
-//Authenticated User
 router.get(
   '/authenticated',
   endpoint(async (req, res) => {
     const accessToken = req.cookies['accessToken'];
     const user = await userService.authenticateUser(
       accessToken,
-      'access_secret',
+      secretAccessKey,
     );
     res.status(200).json({
       message: 'User authenticated successfully',
@@ -73,14 +71,13 @@ router.get(
   }),
 );
 
-//refresh token
 router.post(
   '/refresh',
   endpoint(async (req, res) => {
     const refreshToken = req.cookies['refreshToken'];
     const accessToken = await userService.verifyRefreshToken(
       refreshToken,
-      'refresh_secret',
+      secretRefreshKey,
     );
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -92,7 +89,6 @@ router.post(
   }),
 );
 
-//logout
 router.post(
   '/logout',
   endpoint(async (req, res) => {
