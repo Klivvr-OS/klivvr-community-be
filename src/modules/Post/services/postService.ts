@@ -1,25 +1,10 @@
 import { postRepo, type PostRepo } from '../repos/postRepo';
 import { Prisma } from '@prisma/client';
-import { z } from 'zod';
 
 export class PostService {
   constructor(private readonly postRepo: PostRepo) {}
 
-  createPostSchema = z
-    .object({
-      description: z.string(),
-      userId: z.number(),
-      photoURL: z.string().optional(),
-    })
-    .required();
-
-  updatePostSchema = z.object({
-    description: z.string().nonempty({
-      message: 'Description cannot be empty',
-    }),
-  });
-
-  async createOne(args: z.infer<typeof this.createPostSchema>) {
+  async createOne(args: Prisma.PostUncheckedCreateInput) {
     return await this.postRepo.createOne(args);
   }
 
