@@ -23,7 +23,7 @@ export class UserService {
     })
     .required();
 
-  async createOne(args: z.infer<typeof this.createUserSchema>) {
+  async createOne(args: Prisma.UserUncheckedCreateInput) {
     const existingUser = await this.userRepo.findOne({
       email: args.email,
     });
