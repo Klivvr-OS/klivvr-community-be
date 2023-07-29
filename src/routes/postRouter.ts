@@ -15,6 +15,8 @@ router.post(
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req: Request, res: Response) => {
+    const token = req.cookies.accessToken;
+    const user = await userService.authenticateUser(token, secretAccessKey);
     let photoURL;
     if (req.file) {
       const localFilePath = req.file.path;
@@ -25,14 +27,6 @@ router.post(
         throw new Error();
       }
       photoURL = imageURL;
-    }
-    const token = req.cookies.accessToken;
-    if (!token) {
-      throw new CustomError('Unauthorized', 401);
-    }
-    const user = await userService.authenticateUser(token, secretAccessKey);
-    if (!user) {
-      throw new CustomError('Unauthorized', 401);
     }
     const userId = user.id;
     const description = postService.createPostSchema.parse({
@@ -51,9 +45,7 @@ router.get(
   '/',
   endpoint(async (req, res) => {
     const token = req.cookies.accessToken;
-    if (!token) {
-      throw new CustomError('Unauthorized', 401);
-    }
+    await userService.authenticateUser(token, secretAccessKey);
     const postObjects = await postService.findMany();
     if (!postObjects) {
       throw new CustomError('Posts not found', 404);
@@ -66,9 +58,7 @@ router.get(
   '/:id',
   endpoint(async (req, res) => {
     const token = req.cookies.accessToken;
-    if (!token) {
-      throw new CustomError('Unauthorized', 401);
-    }
+    await userService.authenticateUser(token, secretAccessKey);
     const id = Number(req.params.id);
     const postObject = await postService.findOne({ id });
     if (!postObject) {
@@ -83,10 +73,16 @@ router.put(
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {
+    const token = req.cookies.accessToken;
+    const user = await userService.authenticateUser(token, secretAccessKey);
     const id = Number(req.params.id);
-    const posts = await postService.findOne({ id });
-    if (!posts) {
+    const post = await postService.findOne({ id });
+    if (!post) {
       throw new CustomError('Post not found', 404);
+    }
+    const userId = user.id;
+    if (post.userId !== userId) {
+      throw new CustomError('Forbidden', 403);
     }
     let photoURL;
     if (req.file) {
@@ -98,18 +94,6 @@ router.put(
         throw new Error();
       }
       photoURL = imageURL;
-    }
-    const token = req.cookies.accessToken;
-    if (!token) {
-      throw new CustomError('Invalid Credentials', 401);
-    }
-    const user = await userService.authenticateUser(token, secretAccessKey);
-    if (!user) {
-      throw new CustomError('Invalid Credentials', 401);
-    }
-    const userId = user.id;
-    if (posts.userId !== userId) {
-      throw new CustomError('Unauthorized', 401);
     }
     const updatePostSchema = postService.updatePostSchema.parse({
       description: req.body.description,
@@ -129,22 +113,17 @@ router.delete(
   '/:id',
   endpoint(async (req, res) => {
     const token = req.cookies.accessToken;
-    if (!token) {
-      throw new CustomError('Unauthorized', 401);
-    }
     const user = await userService.authenticateUser(token, secretAccessKey);
-    if (!user) {
-      throw new CustomError('Unauthorized', 401);
-    }
     const id = Number(req.params.id);
-    const deletedpostObject = await postService.deleteOne({ id });
-    if (!deletedpostObject) {
+    const post = await postService.findOne({ id });
+    if (!post) {
       throw new CustomError('Post not found', 404);
     }
     const userId = user.id;
-    if (deletedpostObject.userId !== userId) {
-      throw new CustomError('Unauthorized', 401);
+    if (post.userId !== userId) {
+      throw new CustomError('Forbidden', 403);
     }
+    const deletedpostObject = await postService.deleteOne({ id });
     res.status(200).json(deletedpostObject);
   }),
 );
