@@ -6,7 +6,6 @@ import { handleMulterError } from '../middlewares/Multer';
 import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
-import { secretAccessKey } from '../config';
 import { isAuth } from '../middlewares/';
 
 const router = express.Router();
