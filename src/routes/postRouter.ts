@@ -27,7 +27,7 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = res.locals.user.id;
+    const userId = req.user.id;
     const description = postService.createPostSchema.parse({
       description: req.body.description,
     }).description;
@@ -76,7 +76,7 @@ router.put(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = res.locals.user.id;
+    const userId = req.user.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
@@ -114,7 +114,7 @@ router.delete(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = res.locals.user.id;
+    const userId = req.user.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
