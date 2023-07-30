@@ -7,16 +7,16 @@ import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
 import { secretAccessKey } from '../config';
+import { isAuth } from '../middlewares/';
 
 const router = express.Router();
 
 router.post(
   '/',
+  isAuth,
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req: Request, res: Response) => {
-    const token = req.cookies.accessToken;
-    const user = await userService.authenticateUser(token, secretAccessKey);
     let photoURL;
     if (req.file) {
       const localFilePath = req.file.path;
@@ -28,7 +28,7 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = user.id;
+    const userId = res.locals.user.id;
     const description = postService.createPostSchema.parse({
       description: req.body.description,
     }).description;
@@ -43,9 +43,8 @@ router.post(
 
 router.get(
   '/',
+  isAuth,
   endpoint(async (req, res) => {
-    const token = req.cookies.accessToken;
-    await userService.authenticateUser(token, secretAccessKey);
     const postObjects = await postService.findMany();
     if (!postObjects) {
       throw new CustomError('Posts not found', 404);
@@ -56,9 +55,8 @@ router.get(
 
 router.get(
   '/:id',
+  isAuth,
   endpoint(async (req, res) => {
-    const token = req.cookies.accessToken;
-    await userService.authenticateUser(token, secretAccessKey);
     const id = Number(req.params.id);
     const postObject = await postService.findOne({ id });
     if (!postObject) {
@@ -70,17 +68,16 @@ router.get(
 
 router.put(
   '/:id',
+  isAuth,
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {
-    const token = req.cookies.accessToken;
-    const user = await userService.authenticateUser(token, secretAccessKey);
     const id = Number(req.params.id);
     const post = await postService.findOne({ id });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = user.id;
+    const userId = res.locals.user.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
@@ -111,15 +108,14 @@ router.put(
 
 router.delete(
   '/:id',
+  isAuth,
   endpoint(async (req, res) => {
-    const token = req.cookies.accessToken;
-    const user = await userService.authenticateUser(token, secretAccessKey);
     const id = Number(req.params.id);
     const post = await postService.findOne({ id });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = user.id;
+    const userId = res.locals.user.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
