@@ -1,4 +1,4 @@
-import { postService, userService } from '../modules';
+import { postService } from '../modules';
 import express from 'express';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
