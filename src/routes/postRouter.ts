@@ -6,11 +6,13 @@ import { handleMulterError } from '../middlewares/Multer';
 import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
+import { isAuth } from '../middlewares/';
 
 const router = express.Router();
 
 router.post(
   '/',
+  isAuth,
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req: Request, res: Response) => {
@@ -25,8 +27,10 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = Number(req.body.userId as unknown as string);
-    const { description } = req.body;
+    const userId = req.user.id;
+    const description = postService.createPostSchema.parse({
+      description: req.body.description,
+    }).description;
     const newpostObject = await postService.createOne({
       description,
       photoURL,
@@ -38,6 +42,7 @@ router.post(
 
 router.get(
   '/',
+  isAuth,
   endpoint(async (req, res) => {
     const postObjects = await postService.findMany();
     if (!postObjects) {
@@ -49,6 +54,7 @@ router.get(
 
 router.get(
   '/:id',
+  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     const postObject = await postService.findOne({ id });
@@ -61,18 +67,37 @@ router.get(
 
 router.put(
   '/:id',
+  isAuth,
   multerUpload.single('image'),
+  handleMulterError,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
-    const { description, photoURL } = req.body;
-    const posts = await postService.findOne({ id });
-    if (!posts) {
+    const post = await postService.findOne({ id });
+    if (!post) {
       throw new CustomError('Post not found', 404);
     }
+    const userId = req.user.id;
+    if (post.userId !== userId) {
+      throw new CustomError('Forbidden', 403);
+    }
+    let photoURL;
+    if (req.file) {
+      const localFilePath = req.file.path;
+      const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
+        localFilePath,
+      );
+      if (!isSuccess) {
+        throw new Error();
+      }
+      photoURL = imageURL;
+    }
+    const updatePostSchema = postService.updatePostSchema.parse({
+      description: req.body.description,
+    }).description;
     const updatedpostObject = await postService.updateOne(
       { id },
       {
-        description,
+        description: updatePostSchema,
         photoURL,
       },
     );
@@ -82,12 +107,18 @@ router.put(
 
 router.delete(
   '/:id',
+  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
-    const deletedpostObject = await postService.deleteOne({ id });
-    if (!deletedpostObject) {
+    const post = await postService.findOne({ id });
+    if (!post) {
       throw new CustomError('Post not found', 404);
     }
+    const userId = req.user.id;
+    if (post.userId !== userId) {
+      throw new CustomError('Forbidden', 403);
+    }
+    const deletedpostObject = await postService.deleteOne({ id });
     res.status(200).json(deletedpostObject);
   }),
 );
