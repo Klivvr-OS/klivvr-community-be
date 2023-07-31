@@ -9,7 +9,7 @@ import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 
-const ACCESS_TOKEN_EXPIRY_TIME = '30w';
+const ACCESS_TOKEN_EXPIRY_TIME = '30s';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
 
 export class UserService {
@@ -81,6 +81,7 @@ export class UserService {
     if (user.verificationCode != args.verificationCode) {
       throw new CustomError('Invalid Credentials', 401);
     }
+    await this.userRepo.updateOne({ id }, { verificationCode: null });
     return await this.userRepo.updateOne({ id }, { isVerified: true });
   }
 
