@@ -1,11 +1,12 @@
 import express from 'express';
-import { userService } from '../modules';
+import { resetPasswordCodeService, userService } from '../modules';
 import { Prisma } from '@prisma/client';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
 import { secretAccessKey, secretRefreshKey } from '../config';
+import e from 'express';
 
 const DAY = 24 * 60 * 60 * 1000; // 1 Day
 
@@ -113,6 +114,30 @@ router.post(
     res.clearCookie('refreshToken');
     res.status(200).json({
       message: 'User logged out successfully',
+    });
+  }),
+);
+
+router.post(
+  '/resetPasswordRequest',
+  endpoint(async (req, res) => {
+    const email = req.body.email;
+    await userService.resetPasswordRequest({ email });
+    res.status(200).json({
+      message: 'Password reset link sent successfully',
+    });
+  }),
+);
+
+router.post(
+  '/resetPassword',
+  endpoint(async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+    const resetPasswordCode = req.body.resetPasswordCode;
+    await userService.resetPassword(email, password, resetPasswordCode);
+    res.status(200).json({
+      message: 'Password reset successfully',
     });
   }),
 );

@@ -8,6 +8,8 @@ import { sign, verify } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
+import { resetPasswordCodeService } from '../../ResetPasswordCode';
+import { PasswordService } from '../../../helpers';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '30s';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -36,7 +38,7 @@ export class UserService {
       throw new CustomError('User already exists', 409);
     }
     const code = generateVerificationCode();
-    const hashedPassword = await bcrypt.hash(args.password, 12);
+    const hashedPassword = await PasswordService.hashPassword(args.password);
     const createdUser = await this.userRepo.createOne({
       ...args,
       password: hashedPassword,
@@ -84,7 +86,10 @@ export class UserService {
     if (!user || !user.isVerified) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await PasswordService.comparePasswords(
+      password,
+      user.password,
+    );
     if (!isPasswordCorrect) {
       throw new CustomError('Invalid Credentials', 401);
     }
@@ -141,6 +146,61 @@ export class UserService {
     });
 
     return accessToken;
+  }
+
+  async resetPasswordRequest(args: Prisma.UserWhereInput) {
+    const user = await userService.findOne({ email: args.email });
+    if (!user) {
+      throw new CustomError('Invalid Credentials', 401);
+    }
+    const code = generateVerificationCode();
+    const userCode = await resetPasswordCodeService.findOne({
+      userId: user.id,
+    });
+    if (!userCode) {
+      await resetPasswordCodeService.createOne({
+        userId: user.id,
+        code: code,
+      });
+    } else {
+      await resetPasswordCodeService.updateOne(
+        { userId: user.id },
+        {
+          code: code,
+        },
+      );
+    }
+    await sendGridEmail(
+      user.email,
+      sendGridSubject,
+      sendGridText,
+      `<p>Your reset code is: <strong>${code}</strong></p>`,
+    );
+  }
+
+  async resetPassword(email: string, password: string, code: string) {
+    const user = await this.userRepo.findOne({ email });
+    if (!user) {
+      throw new CustomError('Invalid Credentials', 401);
+    }
+    const resetPasswordCode = await resetPasswordCodeService.findOne({
+      userId: user.id,
+    });
+    if (!resetPasswordCode) {
+      throw new CustomError('Invalid Credentials', 401);
+    }
+
+    if (resetPasswordCode.code != code) {
+      throw new CustomError('Invalid Credentials', 401);
+    }
+    const hashedPassword = await PasswordService.hashPassword(password);
+
+    await this.userRepo.updateOne(
+      { id: user.id },
+      {
+        password: hashedPassword,
+      },
+    );
   }
 }
 
