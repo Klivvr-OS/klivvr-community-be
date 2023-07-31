@@ -5,9 +5,7 @@ export class PostRepo {
   constructor(private readonly client: PrismaClient) {}
 
   async createOne(args: Prisma.PostUncheckedCreateInput) {
-    return await this.client.post.create({
-      data: args,
-    });
+    return await this.client.post.create({ data: args });
   }
 
   async findMany() {
@@ -15,24 +13,17 @@ export class PostRepo {
   }
 
   async findOne(query: Prisma.PostWhereUniqueInput) {
-    return await this.client.post.findFirst({
-      where: query,
-    });
+    return await this.client.post.findFirst({ where: query });
   }
 
   async updateOne(
     query: Prisma.PostWhereUniqueInput,
     args: Prisma.PostUpdateInput,
   ) {
-    return await this.client.post.update({
-      where: query,
-      data: args,
-    });
+    return await this.client.post.update({ where: query, data: args });
   }
   async deleteOne(query: Prisma.PostWhereUniqueInput) {
-    return await this.client.post.delete({
-      where: query,
-    });
+    return await this.client.post.delete({ where: query });
   }
 }
 

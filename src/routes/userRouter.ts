@@ -1,6 +1,5 @@
 import express from 'express';
 import { userService } from '../modules';
-import { Prisma } from '@prisma/client';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
@@ -42,14 +41,12 @@ router.post(
 router.post(
   '/verify',
   endpoint(async (req, res) => {
-    const email = req.body.email;
-    const verificationCode = req.body.verificationCode;
+    const userScehma = userService.verifyUserSchema.parse(req.body);
+    const { email, verificationCode } = userScehma;
     await userService.checkVerificationCode({ email, verificationCode });
     res.status(200).json({
       message: 'User verified successfully',
-      data: {
-        isVerified: true,
-      },
+      data: { isVerified: true },
     });
   }),
 );
@@ -57,8 +54,8 @@ router.post(
 router.post(
   '/login',
   endpoint(async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
+    const userScehma = userService.loginUserSchema.parse(req.body);
+    const { email, password } = userScehma;
     const user = await userService.login({ email, password });
     res.cookie('accessToken', user.accessToken, {
       httpOnly: true,
@@ -68,31 +65,26 @@ router.post(
       httpOnly: true,
       maxAge: 7 * DAY,
     });
-    res.status(200).json({
-      message: 'User logged in successfully',
-    });
+    res.status(200).json({ message: 'User logged in successfully' });
   }),
 );
 
 router.get(
   '/authenticated',
   endpoint(async (req, res) => {
-    const accessToken = req.cookies['accessToken'];
-    const user = await userService.authenticateUser(
-      accessToken,
-      secretAccessKey,
-    );
-    res.status(200).json({
-      message: 'User authenticated successfully',
-    });
+    const cookies: unknown = req.cookies;
+    const accessToken = (cookies as { accessToken: string }).accessToken;
+    await userService.authenticateUser(accessToken, secretAccessKey);
+    res.status(200).json({ message: 'User authenticated successfully' });
   }),
 );
 
 router.post(
   '/refresh',
-  endpoint(async (req, res) => {
-    const refreshToken = req.cookies['refreshToken'];
-    const accessToken = await userService.verifyRefreshToken(
+  endpoint((req, res) => {
+    const cookies: unknown = req.cookies;
+    const refreshToken = (cookies as { refreshToken: string }).refreshToken;
+    const accessToken = userService.verifyRefreshToken(
       refreshToken,
       secretRefreshKey,
     );
@@ -100,20 +92,16 @@ router.post(
       httpOnly: true,
       maxAge: DAY,
     });
-    res.status(200).json({
-      message: 'Token refreshed successfully',
-    });
+    res.status(200).json({ message: 'Token refreshed successfully' });
   }),
 );
 
 router.post(
   '/logout',
-  endpoint(async (req, res) => {
+  endpoint((req, res) => {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
-    res.status(200).json({
-      message: 'User logged out successfully',
-    });
+    res.status(200).json({ message: 'User logged out successfully' });
   }),
 );
 

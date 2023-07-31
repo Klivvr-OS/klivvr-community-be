@@ -3,7 +3,7 @@ name: Node.js CI
 on:
   pull_request:
     branches: '*'
-    
+
 jobs:
   build:
     name: Build and Lint
@@ -12,12 +12,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Use Node.js 
+      - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint 
+      - run: npm run lint
       - run: npm run prisma:generate
       - run: npm run build

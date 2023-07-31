@@ -4,12 +4,12 @@ import sendGridEmail from '../../../mailers/sendEmail';
 import { generateVerificationCode } from '../../../helpers/verificationCode';
 import { CustomError } from '../../../middlewares';
 import bcrypt from 'bcryptjs';
-import { sign, verify } from 'jsonwebtoken';
+import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 
-const ACCESS_TOKEN_EXPIRY_TIME = '30s';
+const ACCESS_TOKEN_EXPIRY_TIME = '30w';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
 
 export class UserService {
@@ -22,16 +22,27 @@ export class UserService {
         .min(3, { message: 'First name is too short' })
         .trim(),
       lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
-      email: z.string().email({ message: 'Email must be unique' }).trim(),
+      email: z.string().email({ message: 'Invalid email' }).trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
       photoURL: z.string(),
     })
     .required();
 
+  verifyUserSchema = z.object({
+    email: z.string().email({ message: 'Invalid email' }).trim(),
+    verificationCode: z
+      .string()
+      .min(4, { message: 'Invalid verification code' })
+      .trim(),
+  });
+
+  loginUserSchema = z.object({
+    email: z.string().email({ message: 'Invalid email' }).trim(),
+    password: z.string().min(6, { message: 'Password is too short' }).trim(),
+  });
+
   async createOne(args: Prisma.UserUncheckedCreateInput) {
-    const existingUser = await this.userRepo.findOne({
-      email: args.email,
-    });
+    const existingUser = await this.userRepo.findOne({ email: args.email });
     if (existingUser != null) {
       throw new CustomError('User already exists', 409);
     }
@@ -70,64 +81,53 @@ export class UserService {
     if (user.verificationCode != args.verificationCode) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    return await this.userRepo.updateOne(
-      { id },
-      {
-        isVerified: true,
-      },
-    );
+    return await this.userRepo.updateOne({ id }, { isVerified: true });
   }
 
-  async login(args: Prisma.UserWhereInput) {
+  async login(args: { email: string; password: string }) {
     const user = await this.userRepo.findOne({ email: args.email });
-    const password = String(args.password);
-    if (!user || !user.isVerified) {
+    if (!user?.isVerified) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await bcrypt.compare(
+      args.password,
+      user.password,
+    );
     if (!isPasswordCorrect) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const accessToken = sign(
-      {
-        id: user.id,
-      },
-      secretAccessKey,
-      { expiresIn: ACCESS_TOKEN_EXPIRY_TIME },
-    );
+    const accessToken = sign({ id: user.id }, secretAccessKey, {
+      expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
+    });
 
-    const refreshToken = sign(
-      {
-        id: user.id,
-      },
-      secretRefreshKey,
-      { expiresIn: REFRESH_TOKEN_EXPIRY_TIME },
-    );
+    const refreshToken = sign({ id: user.id }, secretRefreshKey, {
+      expiresIn: REFRESH_TOKEN_EXPIRY_TIME,
+    });
 
     return { user, accessToken, refreshToken };
   }
 
   async authenticateUser(token: string, secret: string) {
-    let payload: any;
+    let payload;
     try {
-      payload = verify(token, secret);
+      payload = verify(token, secret) as JwtPayload;
     } catch (error) {
       throw new CustomError('Invalid token', 401);
     }
-    if (!payload) {
+    if (!payload || typeof payload !== 'object' || !('id' in payload)) {
       throw new CustomError('Invalid token', 401);
     }
-    const user = await this.userRepo.findOne({ id: payload.id });
+    const user = await this.userRepo.findOne({ id: payload.id as number });
     if (!user) {
       throw new CustomError('Invalid token', 401);
     }
     return user;
   }
 
-  async verifyRefreshToken(token: string, secret: string) {
-    let payload: any;
+  verifyRefreshToken(token: string, secret: string) {
+    let payload: JwtPayload;
     try {
-      payload = verify(token, secret);
+      payload = verify(token, secret) as JwtPayload;
     } catch (error) {
       throw new CustomError('Invalid token', 401);
     }
@@ -135,8 +135,10 @@ export class UserService {
     if (!payload) {
       throw new CustomError('Invalid token', 401);
     }
-
-    const accessToken = sign({ id: payload.id }, secretAccessKey, {
+    if (!payload || typeof payload !== 'object' || !('id' in payload)) {
+      throw new CustomError('Invalid token', 401);
+    }
+    const accessToken = sign({ id: payload.id as number }, secretAccessKey, {
       expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
     });
 
