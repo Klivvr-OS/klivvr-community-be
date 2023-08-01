@@ -6,7 +6,6 @@ import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
 import { secretAccessKey, secretRefreshKey } from '../config';
-import e from 'express';
 
 const DAY = 24 * 60 * 60 * 1000; // 1 Day
 
@@ -121,8 +120,11 @@ router.post(
 router.post(
   '/resetPasswordRequest',
   endpoint(async (req, res) => {
-    const email = req.body.email;
-    await userService.resetPasswordRequest({ email });
+    const resetPasswordRequestSchema =
+      resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
+    await resetPasswordCodeService.resetPasswordRequest(
+      resetPasswordRequestSchema,
+    );
     res.status(200).json({
       message: 'Password reset link sent successfully',
     });
@@ -132,10 +134,14 @@ router.post(
 router.post(
   '/resetPassword',
   endpoint(async (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    const resetPasswordCode = req.body.resetPasswordCode;
-    await userService.resetPassword(email, password, resetPasswordCode);
+    const resetPasswordSchema =
+      resetPasswordCodeService.resetPasswordSchema.parse(req.body);
+    const { email, password, resetPasswordCode } = resetPasswordSchema;
+    await resetPasswordCodeService.resetPassword(
+      email,
+      password,
+      resetPasswordCode,
+    );
     res.status(200).json({
       message: 'Password reset successfully',
     });

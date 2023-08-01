@@ -1,2 +1,2 @@
-export * from './verificationCode';
+export * from './generateCode';
 export * from './PasswordService';

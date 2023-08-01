@@ -10,9 +10,6 @@ CREATE TABLE "ResetPasswordCode" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ResetPasswordCode_code_key" ON "ResetPasswordCode"("code");
-
--- CreateIndex
 CREATE UNIQUE INDEX "ResetPasswordCode_userId_key" ON "ResetPasswordCode"("userId");
 
 -- AddForeignKey
