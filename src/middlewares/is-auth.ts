@@ -9,9 +9,11 @@ export const isAuth = async (
   next: NextFunction,
 ) => {
   try {
-    const cookies: unknown = req.cookies;
-    const token = (cookies as { accessToken: string }).accessToken;
-    const user = await userService.authenticateUser(token, secretAccessKey);
+    const { accessToken } = req.cookies as { accessToken: string };
+    const user = await userService.authenticateUser(
+      accessToken,
+      secretAccessKey,
+    );
     if (user) {
       req.user = user;
       next();
