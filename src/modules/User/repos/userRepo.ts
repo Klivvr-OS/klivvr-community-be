@@ -12,13 +12,6 @@ export class UserRepo {
     return await this.prisma.user.findFirst({ where: query });
   }
 
-  async findOneWithCode(query: Prisma.UserWhereInput) {
-    return await this.prisma.user.findFirst({
-      where: query,
-      include: { resetPasswordCode: true },
-    });
-  }
-
   async updateOne(
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,

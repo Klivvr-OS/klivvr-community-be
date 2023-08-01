@@ -107,10 +107,10 @@ router.post(
 router.post(
   '/resetPasswordRequest',
   endpoint(async (req, res) => {
-    const resetPasswordRequestSchema =
+    const validatedBody =
       resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
     await resetPasswordCodeService.resetPasswordRequest(
-      resetPasswordRequestSchema,
+      validatedBody,
     );
     res.status(200).json({
       message: 'Password reset link sent successfully',
@@ -121,9 +121,9 @@ router.post(
 router.post(
   '/resetPassword',
   endpoint(async (req, res) => {
-    const resetPasswordSchema =
+    const validatedBody =
       resetPasswordCodeService.resetPasswordSchema.parse(req.body);
-    const { email, password, resetPasswordCode } = resetPasswordSchema;
+    const { email, password, resetPasswordCode } = validatedBody;
     await resetPasswordCodeService.resetPassword(
       email,
       password,

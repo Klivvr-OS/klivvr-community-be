@@ -12,6 +12,13 @@ export class ResetPasswordCodeRepo {
     return await this.prisma.resetPasswordCode.findFirst({ where: query });
   }
 
+  async findUserWithCode(query: Prisma.UserWhereInput) {
+    return await this.prisma.user.findFirst({
+      where: query,
+      include: { resetPasswordCode: true },
+    });
+  }
+
   async updateOne(
     query: Prisma.ResetPasswordCodeWhereUniqueInput,
     args: Prisma.ResetPasswordCodeUncheckedUpdateInput,
@@ -20,6 +27,10 @@ export class ResetPasswordCodeRepo {
       where: query,
       data: args,
     });
+  }
+
+  async deleteOne(query: Prisma.ResetPasswordCodeWhereUniqueInput) {
+    return await this.prisma.resetPasswordCode.delete({ where: query });
   }
 }
 

@@ -68,10 +68,6 @@ export class UserService {
     return await this.userRepo.findOne({ email: args.email });
   }
 
-  async findOneWithCode(args: Prisma.UserWhereInput) {
-    return await this.userRepo.findOneWithCode(args);
-  }
-
   async updateOne(
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
@@ -104,8 +100,7 @@ export class UserService {
     }
 
     const isPasswordCorrect = await PasswordService.comparePasswords(
-      password,
-
+      args.password,
       user.password,
     );
     if (!isPasswordCorrect) {
