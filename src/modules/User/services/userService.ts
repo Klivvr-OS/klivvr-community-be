@@ -30,15 +30,12 @@ export class UserService {
 
   verifyUserSchema = z.object({
     email: z.string().email({ message: 'Invalid email' }).trim(),
-    verificationCode: z
-      .string()
-      .min(4, { message: 'Invalid verification code' })
-      .trim(),
+    verificationCode: z.string().trim(),
   });
 
   loginUserSchema = z.object({
-    email: z.string().email({ message: 'Invalid email' }).trim(),
-    password: z.string().min(6, { message: 'Password is too short' }).trim(),
+    email: z.string().email().trim(),
+    password: z.string().trim(),
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
@@ -81,8 +78,10 @@ export class UserService {
     if (user.verificationCode != args.verificationCode) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    await this.userRepo.updateOne({ id }, { verificationCode: null });
-    return await this.userRepo.updateOne({ id }, { isVerified: true });
+    return await this.userRepo.updateOne(
+      { id },
+      { isVerified: true, verificationCode: null },
+    );
   }
 
   async login(args: { email: string; password: string }) {
@@ -115,10 +114,10 @@ export class UserService {
     } catch (error) {
       throw new CustomError('Invalid token', 401);
     }
-    if (!payload || typeof payload !== 'object' || !('id' in payload)) {
-      throw new CustomError('Invalid token', 401);
+    let user;
+    if (typeof payload.id === 'number') {
+      user = await this.userRepo.findOne({ id: payload.id });
     }
-    const user = await this.userRepo.findOne({ id: payload.id as number });
     if (!user) {
       throw new CustomError('Invalid token', 401);
     }
@@ -126,7 +125,7 @@ export class UserService {
   }
 
   verifyRefreshToken(token: string, secret: string) {
-    let payload: JwtPayload;
+    let payload;
     try {
       payload = verify(token, secret) as JwtPayload;
     } catch (error) {
@@ -136,12 +135,12 @@ export class UserService {
     if (!payload) {
       throw new CustomError('Invalid token', 401);
     }
-    if (!payload || typeof payload !== 'object' || !('id' in payload)) {
-      throw new CustomError('Invalid token', 401);
+    let accessToken;
+    if (typeof payload.id === 'number') {
+      accessToken = sign({ id: payload.id }, secretAccessKey, {
+        expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
+      });
     }
-    const accessToken = sign({ id: payload.id as number }, secretAccessKey, {
-      expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
-    });
 
     return accessToken;
   }

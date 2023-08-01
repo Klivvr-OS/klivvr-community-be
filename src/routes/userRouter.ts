@@ -72,8 +72,7 @@ router.post(
 router.get(
   '/authenticated',
   endpoint(async (req, res) => {
-    const cookies: unknown = req.cookies;
-    const accessToken = (cookies as { accessToken: string }).accessToken;
+    const { accessToken } = req.cookies as { accessToken: string };
     await userService.authenticateUser(accessToken, secretAccessKey);
     res.status(200).json({ message: 'User authenticated successfully' });
   }),
@@ -82,8 +81,7 @@ router.get(
 router.post(
   '/refresh',
   endpoint((req, res) => {
-    const cookies: unknown = req.cookies;
-    const refreshToken = (cookies as { refreshToken: string }).refreshToken;
+    const { refreshToken } = req.cookies as { refreshToken: string };
     const accessToken = userService.verifyRefreshToken(
       refreshToken,
       secretRefreshKey,
