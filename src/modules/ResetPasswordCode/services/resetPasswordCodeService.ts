@@ -59,7 +59,6 @@ export class ResetPasswordCodeService {
     const userWithCode = await resetPasswordCodeService.findUserWithCode({
       email: args.email,
     });
-    const user = await userService.findOne({ email: args.email });
     if (!userWithCode) {
       throw new CustomError('Invalid Credentials', 401);
     }

@@ -3,12 +3,10 @@ import { Prisma } from '@prisma/client';
 import sendGridEmail from '../../../mailers/sendEmail';
 import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
-import bcrypt from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
-import { resetPasswordCodeService } from '../../ResetPasswordCode';
 import { PasswordService } from '../../../helpers';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '30s';

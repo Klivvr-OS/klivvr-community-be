@@ -1,6 +1,5 @@
 import express from 'express';
 import { resetPasswordCodeService, userService } from '../modules';
-import { Prisma } from '@prisma/client';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
@@ -109,9 +108,7 @@ router.post(
   endpoint(async (req, res) => {
     const validatedBody =
       resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
-    await resetPasswordCodeService.resetPasswordRequest(
-      validatedBody,
-    );
+    await resetPasswordCodeService.resetPasswordRequest(validatedBody);
     res.status(200).json({
       message: 'Password reset link sent successfully',
     });
@@ -121,8 +118,9 @@ router.post(
 router.post(
   '/resetPassword',
   endpoint(async (req, res) => {
-    const validatedBody =
-      resetPasswordCodeService.resetPasswordSchema.parse(req.body);
+    const validatedBody = resetPasswordCodeService.resetPasswordSchema.parse(
+      req.body,
+    );
     const { email, password, resetPasswordCode } = validatedBody;
     await resetPasswordCodeService.resetPassword(
       email,
