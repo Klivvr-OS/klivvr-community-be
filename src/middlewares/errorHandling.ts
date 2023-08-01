@@ -19,9 +19,7 @@ export const errorHandlerMiddleware = (
     const statusCode = err.status;
     const message = err.message;
 
-    return res.status(statusCode).json({
-      message: message,
-    });
+    return res.status(statusCode).json({ message: message });
   }
 
   if (err instanceof ZodError) {
@@ -38,7 +36,5 @@ export const errorHandlerMiddleware = (
     });
   }
 
-  return res.status(500).json({
-    message: 'Internal Server Error',
-  });
+  return res.status(500).json({ message: 'Internal Server Error' });
 };

@@ -1,16 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
+import { type Request, Response, NextFunction } from 'express';
 import { userService } from '../modules';
 import { secretAccessKey } from '../config';
 import { CustomError } from './errorHandling';
 
 export const isAuth = async (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) => {
   try {
-    const token = req.cookies.accessToken;
-    const user = await userService.authenticateUser(token, secretAccessKey);
+    const { accessToken } = req.cookies as { accessToken: string };
+    const user = await userService.authenticateUser(
+      accessToken,
+      secretAccessKey,
+    );
     if (user) {
       req.user = user;
       next();

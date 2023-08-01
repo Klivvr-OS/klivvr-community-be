@@ -27,14 +27,12 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = req.user.id;
-    const description = postService.createPostSchema.parse({
-      description: req.body.description,
-    }).description;
+    const userId = req.user?.id;
+    const { description } = postService.createPostSchema.parse(req.body);
     const newpostObject = await postService.createOne({
       description,
       photoURL,
-      userId,
+      userId: userId as number,
     });
     res.status(201).json(newpostObject);
   }),
@@ -76,7 +74,7 @@ router.put(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = req.user.id;
+    const userId = req.user?.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
@@ -91,15 +89,10 @@ router.put(
       }
       photoURL = imageURL;
     }
-    const updatePostSchema = postService.updatePostSchema.parse({
-      description: req.body.description,
-    }).description;
+    const { description } = postService.updatePostSchema.parse(req.body);
     const updatedpostObject = await postService.updateOne(
       { id },
-      {
-        description: updatePostSchema,
-        photoURL,
-      },
+      { description, photoURL },
     );
     res.status(200).json(updatedpostObject);
   }),
@@ -114,7 +107,7 @@ router.delete(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const userId = req.user.id;
+    const userId = req.user?.id;
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }

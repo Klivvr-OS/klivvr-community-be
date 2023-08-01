@@ -16,10 +16,7 @@ export class UserRepo {
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
   ) {
-    return await this.prisma.user.update({
-      where: query,
-      data: args,
-    });
+    return await this.prisma.user.update({ where: query, data: args });
   }
 }
 
