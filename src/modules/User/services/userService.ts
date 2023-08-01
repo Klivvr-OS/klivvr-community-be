@@ -4,7 +4,7 @@ import sendGridEmail from '../../../mailers/sendEmail';
 import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
 import bcrypt from 'bcryptjs';
-import { sign, verify } from 'jsonwebtoken';
+import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
@@ -24,16 +24,24 @@ export class UserService {
         .min(3, { message: 'First name is too short' })
         .trim(),
       lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
-      email: z.string().email({ message: 'Email must be unique' }).trim(),
+      email: z.string().email({ message: 'Invalid email' }).trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
       photoURL: z.string(),
     })
     .required();
 
+  verifyUserSchema = z.object({
+    email: z.string().email({ message: 'Invalid email' }).trim(),
+    verificationCode: z.string().trim(),
+  });
+
+  loginUserSchema = z.object({
+    email: z.string().email().trim(),
+    password: z.string().trim(),
+  });
+
   async createOne(args: Prisma.UserUncheckedCreateInput) {
-    const existingUser = await this.userRepo.findOne({
-      email: args.email,
-    });
+    const existingUser = await this.userRepo.findOne({ email: args.email });
     if (existingUser != null) {
       throw new CustomError('User already exists', 409);
     }
@@ -85,65 +93,56 @@ export class UserService {
     }
     return await this.userRepo.updateOne(
       { id },
-      {
-        isVerified: true,
-      },
+      { isVerified: true, verificationCode: null },
     );
   }
 
-  async login(args: Prisma.UserWhereInput) {
+  async login(args: { email: string; password: string }) {
     const user = await this.userRepo.findOne({ email: args.email });
-    const password = String(args.password);
-    if (!user || !user.isVerified) {
+    if (!user?.isVerified) {
       throw new CustomError('Invalid Credentials', 401);
     }
+
     const isPasswordCorrect = await PasswordService.comparePasswords(
       password,
+
       user.password,
     );
     if (!isPasswordCorrect) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const accessToken = sign(
-      {
-        id: user.id,
-      },
-      secretAccessKey,
-      { expiresIn: ACCESS_TOKEN_EXPIRY_TIME },
-    );
+    const accessToken = sign({ id: user.id }, secretAccessKey, {
+      expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
+    });
 
-    const refreshToken = sign(
-      {
-        id: user.id,
-      },
-      secretRefreshKey,
-      { expiresIn: REFRESH_TOKEN_EXPIRY_TIME },
-    );
+    const refreshToken = sign({ id: user.id }, secretRefreshKey, {
+      expiresIn: REFRESH_TOKEN_EXPIRY_TIME,
+    });
 
     return { user, accessToken, refreshToken };
   }
 
   async authenticateUser(token: string, secret: string) {
-    let payload: any;
+    let payload;
     try {
-      payload = verify(token, secret);
+      payload = verify(token, secret) as JwtPayload;
     } catch (error) {
       throw new CustomError('Invalid token', 401);
     }
-    if (!payload) {
-      throw new CustomError('Invalid token', 401);
+    let user;
+    if (typeof payload.id === 'number') {
+      user = await this.userRepo.findOne({ id: payload.id });
     }
-    const user = await this.userRepo.findOne({ id: payload.id });
     if (!user) {
       throw new CustomError('Invalid token', 401);
     }
     return user;
   }
 
-  async verifyRefreshToken(token: string, secret: string) {
-    let payload: any;
+  verifyRefreshToken(token: string, secret: string) {
+    let payload;
     try {
-      payload = verify(token, secret);
+      payload = verify(token, secret) as JwtPayload;
     } catch (error) {
       throw new CustomError('Invalid token', 401);
     }
@@ -151,10 +150,13 @@ export class UserService {
     if (!payload) {
       throw new CustomError('Invalid token', 401);
     }
+    let accessToken;
+    if (typeof payload.id === 'number') {
+      accessToken = sign({ id: payload.id }, secretAccessKey, {
+        expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
+      });
+    }
 
-    const accessToken = sign({ id: payload.id }, secretAccessKey, {
-      expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
-    });
     return accessToken;
   }
 }
