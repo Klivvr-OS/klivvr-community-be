@@ -38,6 +38,27 @@ export class UserService {
     password: z.string().trim(),
   });
 
+  validateUpdateUserSchema = z.object({
+    firstName: z
+      .string()
+      .min(3, { message: 'First name is too short' })
+      .optional(),
+    lastName: z
+      .string()
+      .min(3, { message: 'Last name is too short' })
+      .optional(),
+    photoURL: z.string().optional(),
+    phone: z
+      .string()
+      .regex(/^01[0-2,5]{1}[0-9]{8}$/, { message: 'Invalid phone number' })
+      .optional(),
+    birthdate: z.coerce.date().optional(),
+    likes: z.array(z.string()).optional(),
+    favoriteClubs: z.array(z.string()).optional(),
+    preferredFoods: z.array(z.string()).optional(),
+    hobbies: z.array(z.string()).optional(),
+  });
+
   async createOne(args: Prisma.UserUncheckedCreateInput) {
     const existingUser = await this.userRepo.findOne({ email: args.email });
     if (existingUser != null) {

@@ -11,24 +11,24 @@ datasource db {
 }
 
 model User {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique
-  password          String
-  firstName         String
-  lastName          String
-  phone             String?            @unique
-  birthdate         DateTime?
-  likes             String?
-  favoriteClubs     String?
-  preferredFoods    String?
-  hobbies           String?
-  Role              Role               @default(USER)
-  verificationCode  String?
-  isVerified        Boolean            @default(false)
-  photoURL          String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  posts             Post[]
+  id               Int       @id @default(autoincrement())
+  email            String    @unique
+  password         String
+  firstName        String
+  lastName         String
+  phone            String?   @unique
+  birthdate        DateTime?
+  likes            String[]  @default([])
+  favoriteClubs    String[]  @default([])
+  preferredFoods   String[]  @default([])
+  hobbies          String[]  @default([])
+  Role             Role      @default(USER)
+  verificationCode String?
+  isVerified       Boolean   @default(false)
+  photoURL         String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  posts            Post[]
   resetPasswordCode ResetPasswordCode?
 }
 
