@@ -33,7 +33,7 @@ export class ResetPasswordCodeRepo {
     return await this.prisma.resetPasswordCode.upsert({
       where: { userId },
       create: { userId, code },
-      update: { userId },
+      update: { code },
     });
   }
 
