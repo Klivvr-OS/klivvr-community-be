@@ -104,19 +104,19 @@ router.post(
 );
 
 router.post(
-  '/resetPasswordRequest',
+  '/reset-password-request',
   endpoint(async (req, res) => {
     const validatedBody =
       resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
-    await resetPasswordCodeService.resetPasswordRequest(validatedBody);
-    res.status(200).json({
-      message: 'Password reset link sent successfully',
-    });
+    const response = await resetPasswordCodeService.resetPasswordRequest(
+      validatedBody.email,
+    );
+    res.status(200).json(response);
   }),
 );
 
 router.post(
-  '/resetPassword',
+  '/reset-password',
   endpoint(async (req, res) => {
     const validatedBody = resetPasswordCodeService.resetPasswordSchema.parse(
       req.body,

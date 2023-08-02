@@ -40,8 +40,8 @@ export class ResetPasswordCodeService {
     return await this.resetPasswordCodeRepo.findOne(args);
   }
 
-  async findUserWithCode(args: Prisma.UserWhereInput) {
-    return await this.resetPasswordCodeRepo.findUserWithCode(args);
+  async findOneByUserEmail(query: Prisma.ResetPasswordCodeWhereInput) {
+    return await this.resetPasswordCodeRepo.findOneByUserEmail(query);
   }
 
   async updateOne(
@@ -55,58 +55,54 @@ export class ResetPasswordCodeService {
     return await this.resetPasswordCodeRepo.deleteOne(query);
   }
 
-  async resetPasswordRequest(args: Prisma.UserWhereInput) {
-    const userWithCode = await resetPasswordCodeService.findUserWithCode({
-      email: args.email,
-    });
-    if (!userWithCode) {
-      throw new CustomError('Invalid Credentials', 401);
-    }
-    const code = generateCode();
-    if (!userWithCode.resetPasswordCode) {
-      await resetPasswordCodeRepo.createOne({
-        userId: userWithCode.id,
-        code: code,
-      });
-    } else {
-      await resetPasswordCodeRepo.updateOne(
-        { userId: userWithCode.id },
-        {
+  async resetPasswordRequest(email: string) {
+    const user = await userService.findOne({ email });
+    if (user) {
+      const userWithCode = await this.findOneByUserEmail({ user: { email } });
+      const code = generateCode();
+      if (!userWithCode) {
+        await resetPasswordCodeRepo.createOne({
+          userId: user.id,
           code: code,
-        },
+        });
+      } else {
+        await resetPasswordCodeRepo.updateOne(
+          { userId: userWithCode.userId },
+          {
+            code: code,
+          },
+        );
+      }
+      await sendGridEmail(
+        user.email,
+        sendGridResetPasswordSubject,
+        sendGridResetPasswordText,
+        `${sendGridResetPasswordHTML}<p>Your reset code is: <strong>${code}</strong></p>`,
       );
     }
-    await sendGridEmail(
-      userWithCode.email,
-      sendGridResetPasswordSubject,
-      sendGridResetPasswordText,
-      `${sendGridResetPasswordHTML}<p>Your reset code is: <strong>${code}</strong></p>`,
-    );
+    return {
+      message:
+        'If the email address is registered, a password reset link will be sent shortly.',
+    };
   }
 
   async resetPassword(email: string, password: string, code: string) {
-    const userWithCode = await resetPasswordCodeService.findUserWithCode({
-      email,
+    const userWithCode = await resetPasswordCodeService.findOneByUserEmail({
+      user: { email },
     });
-    if (!userWithCode) {
+    if (!userWithCode || userWithCode.code != code) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    if (!userWithCode.resetPasswordCode) {
-      throw new CustomError('Invalid Credentials', 401);
-    }
-    if (userWithCode.resetPasswordCode.code != code) {
-      throw new CustomError('Invalid Credentials', 401);
-    }
+
     const hashedPassword = await PasswordService.hashPassword(password);
 
     await userService.updateOne(
-      { id: userWithCode.id },
+      { id: userWithCode.userId },
       {
         password: hashedPassword,
       },
     );
-
-    await this.deleteOne({ userId: userWithCode.id });
+    await this.deleteOne({ userId: userWithCode.userId });
   }
 }
 
