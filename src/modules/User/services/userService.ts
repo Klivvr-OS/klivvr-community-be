@@ -50,13 +50,7 @@ export class UserService {
     photoURL: z.string().optional(),
     phone: z
       .string()
-      .refine(
-        (phone) => {
-          const regex = /^01[0-2,5]{1}[0-9]{8}$/;
-          return regex.test(phone);
-        },
-        { message: 'Invalid phone number' },
-      )
+      .regex(/^01[0-2,5]{1}[0-9]{8}$/, { message: 'Invalid phone number' })
       .optional(),
     birthdate: z.coerce.date().optional(),
     likes: z.array(z.string()).optional(),
