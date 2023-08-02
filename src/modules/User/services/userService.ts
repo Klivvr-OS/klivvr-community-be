@@ -173,13 +173,6 @@ export class UserService {
 
     return accessToken;
   }
-
-  async updateOne(
-    query: Prisma.UserWhereUniqueInput,
-    data: Prisma.UserUpdateInput,
-  ) {
-    return await this.userRepo.updateOne(query, data);
-  }
 }
 
 export const userService = new UserService(userRepo);
