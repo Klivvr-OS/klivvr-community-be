@@ -29,6 +29,7 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   posts            Post[]
+  resetPasswordCode ResetPasswordCode?
 }
 
 enum Role {
@@ -45,3 +46,13 @@ model Post {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model ResetPasswordCode {
+  id        Int      @id @default(autoincrement())
+  code      String   
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
