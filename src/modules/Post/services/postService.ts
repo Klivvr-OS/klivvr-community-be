@@ -7,7 +7,7 @@ export class PostService {
 
   createPostSchema = z
     .object({
-      description: z.string(),
+      description: z.string().nonempty({ message: 'Description is required' }),
     })
     .required();
 

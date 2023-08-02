@@ -17,13 +17,11 @@ import { z } from 'zod';
 export class ResetPasswordCodeService {
   constructor(private readonly resetPasswordCodeRepo: ResetPasswordCodeRepo) {}
   resetPasswordRequestSchema = z
-    .object({
-      email: z.string().email().trim(),
-    })
+    .object({ email: z.string().email().toLowerCase().trim() })
     .required();
   resetPasswordSchema = z
     .object({
-      email: z.string().email().trim(),
+      email: z.string().email().toLowerCase().trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
       resetPasswordCode: z
         .string()
@@ -86,9 +84,7 @@ export class ResetPasswordCodeService {
 
     await userService.updateOne(
       { id: userWithCode.userId },
-      {
-        password: hashedPassword,
-      },
+      { password: hashedPassword },
     );
     await this.deleteOne({ userId: userWithCode.userId });
   }
