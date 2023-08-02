@@ -40,7 +40,7 @@ export class ResetPasswordCodeService {
     return await this.resetPasswordCodeRepo.findOne(args);
   }
 
-  async findOneByUserEmail(query: Prisma.ResetPasswordCodeWhereInput) {
+  async findOneByUserEmail(query: { email: string }) {
     return await this.resetPasswordCodeRepo.findOneByUserEmail(query);
   }
 
@@ -58,7 +58,7 @@ export class ResetPasswordCodeService {
   async resetPasswordRequest(email: string) {
     const user = await userService.findOne({ email });
     if (user) {
-      const userWithCode = await this.findOneByUserEmail({ user: { email } });
+      const userWithCode = await this.findOneByUserEmail({ email });
       const code = generateCode();
       if (!userWithCode) {
         await resetPasswordCodeRepo.createOne({
@@ -88,7 +88,7 @@ export class ResetPasswordCodeService {
 
   async resetPassword(email: string, password: string, code: string) {
     const userWithCode = await resetPasswordCodeService.findOneByUserEmail({
-      user: { email },
+      email,
     });
     if (!userWithCode || userWithCode.code != code) {
       throw new CustomError('Invalid Credentials', 401);

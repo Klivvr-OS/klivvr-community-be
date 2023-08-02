@@ -12,9 +12,9 @@ export class ResetPasswordCodeRepo {
     return await this.prisma.resetPasswordCode.findFirst({ where: query });
   }
 
-  async findOneByUserEmail(query: Prisma.ResetPasswordCodeWhereInput) {
+  async findOneByUserEmail(query: { email: string }) {
     return await this.prisma.resetPasswordCode.findFirst({
-      where: query,
+      where: { user: query },
       include: { user: true },
     });
   }
