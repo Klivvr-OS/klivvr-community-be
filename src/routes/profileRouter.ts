@@ -24,12 +24,10 @@ router.put(
       }
       photoURL = imageURL;
     }
-    const updateUserSchema = userService.validateUpdateUserSchema.parse(
-      req.body,
-    );
-    if (photoURL) {
-      updateUserSchema.photoURL = photoURL;
-    }
+    const updateUserSchema = userService.validateUpdateUserSchema.parse({
+      ...req.body,
+      photoURL,
+    });
     await userService.updateOne({ id: userId }, updateUserSchema);
     res
       .status(200)
