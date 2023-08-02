@@ -18,10 +18,10 @@ model User {
   lastName         String
   phone            String?   @unique
   birthdate        DateTime?
-  likes            String?
-  favoriteClubs    String?
-  preferredFoods   String?
-  hobbies          String?
+  likes            String[]  @default([])
+  favoriteClubs    String[]  @default([])
+  preferredFoods   String[]  @default([])
+  hobbies          String[]  @default([])
   Role             Role      @default(USER)
   verificationCode String?
   isVerified       Boolean   @default(false)
