@@ -108,10 +108,11 @@ router.post(
   endpoint(async (req, res) => {
     const validatedBody =
       resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
-    const response = await resetPasswordCodeService.resetPasswordRequest(
-      validatedBody.email,
-    );
-    res.status(200).json(response);
+    await resetPasswordCodeService.resetPasswordRequest(validatedBody.email);
+    res.status(200).json({
+      message:
+        'If the email address is registered, a password reset link will be sent shortly.',
+    });
   }),
 );
 

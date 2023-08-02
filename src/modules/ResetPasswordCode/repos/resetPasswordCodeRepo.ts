@@ -29,6 +29,14 @@ export class ResetPasswordCodeRepo {
     });
   }
 
+  async upsertOne(userId: number, code: string) {
+    return await this.prisma.resetPasswordCode.upsert({
+      where: { userId },
+      create: { userId, code },
+      update: { userId },
+    });
+  }
+
   async deleteOne(query: Prisma.ResetPasswordCodeWhereUniqueInput) {
     return await this.prisma.resetPasswordCode.delete({ where: query });
   }

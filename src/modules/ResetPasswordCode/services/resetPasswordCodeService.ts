@@ -51,39 +51,27 @@ export class ResetPasswordCodeService {
     return await this.resetPasswordCodeRepo.updateOne(query, args);
   }
 
+  async upsertOne(userId: number, code: string) {
+    return await this.resetPasswordCodeRepo.upsertOne(userId, code);
+  }
+
   async deleteOne(query: Prisma.ResetPasswordCodeWhereUniqueInput) {
     return await this.resetPasswordCodeRepo.deleteOne(query);
   }
 
   async resetPasswordRequest(email: string) {
     const user = await userService.findOne({ email });
-    if (user) {
-      const userWithCode = await this.findOneByUserEmail({ email });
-      const code = generateCode();
-      if (!userWithCode) {
-        await resetPasswordCodeRepo.createOne({
-          userId: user.id,
-          code: code,
-        });
-      } else {
-        await resetPasswordCodeRepo.updateOne(
-          { userId: userWithCode.userId },
-          {
-            code: code,
-          },
-        );
-      }
-      await sendGridEmail(
-        user.email,
-        sendGridResetPasswordSubject,
-        sendGridResetPasswordText,
-        `${sendGridResetPasswordHTML}<p>Your reset code is: <strong>${code}</strong></p>`,
-      );
+    if (!user) {
+      return;
     }
-    return {
-      message:
-        'If the email address is registered, a password reset link will be sent shortly.',
-    };
+    const code = generateCode();
+    await this.upsertOne(user.id, code);
+    await sendGridEmail(
+      user.email,
+      sendGridResetPasswordSubject,
+      sendGridResetPasswordText,
+      `${sendGridResetPasswordHTML}<p>Your reset code is: <strong>${code}</strong></p>`,
+    );
   }
 
   async resetPassword(email: string, password: string, code: string) {
