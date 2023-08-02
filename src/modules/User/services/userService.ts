@@ -24,7 +24,7 @@ export class UserService {
       lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
       email: z
         .string()
-        .email({ message: 'Invalid email' })
+        .email({ message: 'Invalid email' }) //todo add endWith/regex for klivvr emails
         .toLowerCase()
         .trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
