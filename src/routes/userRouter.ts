@@ -128,9 +128,7 @@ router.post(
       password,
       resetPasswordCode,
     );
-    res.status(200).json({
-      message: 'Password reset successfully',
-    });
+    res.status(200).json({ message: 'Password reset successfully' });
   }),
 );
 

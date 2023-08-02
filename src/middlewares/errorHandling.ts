@@ -11,7 +11,7 @@ export class CustomError extends Error {
 
 export const errorHandlerMiddleware = (
   err: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
   _next: NextFunction,
 ) => {
@@ -30,10 +30,9 @@ export const errorHandlerMiddleware = (
       };
     });
 
-    return res.status(400).json({
-      message: 'Validation Error',
-      errors: errors,
-    });
+    return res
+      .status(400)
+      .json({ message: 'Validation Error', errors: errors });
   }
 
   return res.status(500).json({ message: 'Internal Server Error' });

@@ -9,13 +9,7 @@ export async function sendEmail(
   text: string,
   html: string,
 ) {
-  const msg = {
-    to,
-    from: sendGridFromEmail,
-    subject,
-    text,
-    html,
-  };
+  const msg = { to, from: sendGridFromEmail, subject, text, html };
 
   try {
     await sendGrid.send(msg);

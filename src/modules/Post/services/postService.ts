@@ -12,9 +12,9 @@ export class PostService {
     .required();
 
   updatePostSchema = z.object({
-    description: z.string().nonempty({
-      message: 'Description cannot be empty',
-    }),
+    description: z
+      .string()
+      .nonempty({ message: 'Description cannot be empty' }),
   });
 
   async createOne(args: Prisma.PostUncheckedCreateInput) {
