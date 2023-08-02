@@ -1,13 +1,13 @@
 import { userRepo, type UserRepo } from '../repos/userRepo';
 import { Prisma } from '@prisma/client';
 import sendGridEmail from '../../../mailers/sendEmail';
-import { generateVerificationCode } from '../../../helpers/verificationCode';
+import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
-import bcrypt from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
+import { PasswordService } from '../../../helpers';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '30s';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -43,8 +43,8 @@ export class UserService {
     if (existingUser != null) {
       throw new CustomError('User already exists', 409);
     }
-    const code = generateVerificationCode();
-    const hashedPassword = await bcrypt.hash(args.password, 12);
+    const code = generateCode();
+    const hashedPassword = await PasswordService.hashPassword(args.password);
     const createdUser = await this.userRepo.createOne({
       ...args,
       password: hashedPassword,
@@ -64,6 +64,13 @@ export class UserService {
 
   async findOne(args: Prisma.UserWhereInput) {
     return await this.userRepo.findOne({ email: args.email });
+  }
+
+  async updateOne(
+    query: Prisma.UserWhereUniqueInput,
+    args: Prisma.UserUncheckedUpdateInput,
+  ) {
+    return await this.userRepo.updateOne(query, args);
   }
 
   async checkVerificationCode(args: Prisma.UserWhereInput) {
@@ -89,7 +96,8 @@ export class UserService {
     if (!user?.isVerified) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const isPasswordCorrect = await bcrypt.compare(
+
+    const isPasswordCorrect = await PasswordService.comparePasswords(
       args.password,
       user.password,
     );

@@ -1,5 +1,5 @@
 import express from 'express';
-import { userService } from '../modules';
+import { resetPasswordCodeService, userService } from '../modules';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
@@ -100,6 +100,37 @@ router.post(
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     res.status(200).json({ message: 'User logged out successfully' });
+  }),
+);
+
+router.post(
+  '/reset-password-request',
+  endpoint(async (req, res) => {
+    const validatedBody =
+      resetPasswordCodeService.resetPasswordRequestSchema.parse(req.body);
+    await resetPasswordCodeService.resetPasswordRequest(validatedBody.email);
+    res.status(200).json({
+      message:
+        'If the email address is registered, a password reset link will be sent shortly.',
+    });
+  }),
+);
+
+router.post(
+  '/reset-password',
+  endpoint(async (req, res) => {
+    const validatedBody = resetPasswordCodeService.resetPasswordSchema.parse(
+      req.body,
+    );
+    const { email, password, resetPasswordCode } = validatedBody;
+    await resetPasswordCodeService.resetPassword(
+      email,
+      password,
+      resetPasswordCode,
+    );
+    res.status(200).json({
+      message: 'Password reset successfully',
+    });
   }),
 );
 
