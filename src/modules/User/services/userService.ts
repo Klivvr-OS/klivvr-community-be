@@ -22,19 +22,26 @@ export class UserService {
         .min(3, { message: 'First name is too short' })
         .trim(),
       lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
-      email: z.string().email({ message: 'Invalid email' }).trim(),
+      email: z
+        .string()
+        .email({ message: 'Invalid email' }) //todo add endWith/regex for klivvr emails
+        .toLowerCase()
+        .trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
       photoURL: z.string(),
     })
     .required();
 
   verifyUserSchema = z.object({
-    email: z.string().email({ message: 'Invalid email' }).trim(),
-    verificationCode: z.string().trim(),
+    email: z.string().email({ message: 'Invalid email' }).toLowerCase().trim(),
+    verificationCode: z
+      .string()
+      .nonempty({ message: 'Verification code is required' })
+      .trim(),
   });
 
   loginUserSchema = z.object({
-    email: z.string().email().trim(),
+    email: z.string().email().toLowerCase().trim(),
     password: z.string().trim(),
   });
 

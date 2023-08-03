@@ -7,14 +7,16 @@ export class PostService {
 
   createPostSchema = z
     .object({
-      description: z.string(),
+      description: z.string().nonempty({ message: 'Description is required' }),
     })
     .required();
 
   updatePostSchema = z.object({
-    description: z.string().nonempty({
-      message: 'Description cannot be empty',
-    }),
+    description: z
+      .string()
+      .nonempty({ message: 'Description cannot be empty' })
+      .optional(),
+    photoURL: z.string().optional(),
   });
 
   async createOne(args: Prisma.PostUncheckedCreateInput) {
