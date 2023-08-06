@@ -5,13 +5,13 @@ import { z } from 'zod';
 export class PostService {
   constructor(private readonly postRepo: PostRepo) {}
 
-  createPostSchema = z
+  readonly createPostSchema = z
     .object({
       description: z.string().nonempty({ message: 'Description is required' }),
     })
     .required();
 
-  updatePostSchema = z.object({
+  readonly updatePostSchema = z.object({
     description: z
       .string()
       .nonempty({ message: 'Description cannot be empty' })
@@ -23,8 +23,11 @@ export class PostService {
     return await this.postRepo.createOne(args);
   }
 
-  async findMany() {
-    return await this.postRepo.findMany();
+  async findMany(
+    query: Prisma.PostWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.postRepo.findMany(query, { ...options });
   }
 
   async findOne(query: Prisma.PostWhereUniqueInput) {
