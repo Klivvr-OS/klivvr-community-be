@@ -27,7 +27,7 @@ export class PostService {
     query: Prisma.PostWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
-    return await this.postRepo.findMany(query, { ...options });
+    return await this.postRepo.findManyWithPagination(query, { ...options });
   }
 
   async findOne(query: Prisma.PostWhereUniqueInput) {
