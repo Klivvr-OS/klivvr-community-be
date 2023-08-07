@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
 import { isAuth } from '../middlewares/';
+import { requestQueryPaginationSchema } from '../helpers';
 
 const router = express.Router();
 
@@ -42,7 +43,13 @@ router.get(
   '/',
   isAuth,
   endpoint(async (req, res) => {
-    const postObjects = await postService.findMany();
+    const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
+      req.query,
+    );
+    const postObjects = await postService.findManyWithPagination(
+      {},
+      { pageNumber, pageSize },
+    );
     if (!postObjects) {
       throw new CustomError('Posts not found', 404);
     }

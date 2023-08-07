@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import prisma from '../../../database/client';
+import { paginate } from '../../../helpers';
 
 export class PostRepo {
   constructor(private readonly client: PrismaClient) {}
@@ -8,8 +9,15 @@ export class PostRepo {
     return await this.client.post.create({ data: args });
   }
 
-  async findMany() {
-    return await this.client.post.findMany();
+  async findManyWithPagination(
+    query: Prisma.PostWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.client.post.findMany({
+      where: query,
+      ...paginate(options),
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(query: Prisma.PostWhereUniqueInput) {
