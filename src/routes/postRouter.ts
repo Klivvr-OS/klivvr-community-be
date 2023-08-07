@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
 import { isAuth } from '../middlewares/';
-import { validateRequestQuery } from '../helpers';
+import { requestQuerySchema } from '../helpers';
 
 const router = express.Router();
 
@@ -43,8 +43,8 @@ router.get(
   '/',
   isAuth,
   endpoint(async (req, res) => {
-    const { pageNumber, pageSize } = validateRequestQuery.parse(req.query);
-    const postObjects = await postService.findMany(
+    const { pageNumber, pageSize } = requestQuerySchema.parse(req.query);
+    const postObjects = await postService.findManyWithPagination(
       {},
       { pageNumber, pageSize },
     );

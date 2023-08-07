@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const validateRequestQuery = z.object({
+export const requestQuerySchema = z.object({
   pageNumber: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(10),
 });
