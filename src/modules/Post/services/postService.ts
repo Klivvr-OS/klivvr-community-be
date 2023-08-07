@@ -23,7 +23,7 @@ export class PostService {
     return await this.postRepo.createOne(args);
   }
 
-  async findMany(
+  async findManyWithPagination(
     query: Prisma.PostWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
