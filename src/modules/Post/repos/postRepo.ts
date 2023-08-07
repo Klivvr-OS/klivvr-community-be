@@ -9,13 +9,14 @@ export class PostRepo {
     return await this.client.post.create({ data: args });
   }
 
-  async findMany(
+  async findManyWithPagination(
     query: Prisma.PostWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
     return await this.client.post.findMany({
       where: query,
       ...paginate(options),
+      orderBy: { createdAt: 'desc' },
     });
   }
 
