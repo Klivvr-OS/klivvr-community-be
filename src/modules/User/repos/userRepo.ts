@@ -16,7 +16,7 @@ export class UserRepo {
     return await this.prisma.user.findMany({
       where: query,
       ...paginate(options),
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
       select: {
         firstName: true,
         lastName: true,
@@ -26,26 +26,11 @@ export class UserRepo {
     });
   }
 
-  async findOneByEmail(query: Prisma.UserWhereInput) {
-    return await this.prisma.user.findFirst({ where: query });
-  }
-
-  async findOneById(query: Prisma.UserWhereUniqueInput) {
-    return await this.prisma.user.findUnique({
-      where: query,
-      select: {
-        email: true,
-        firstName: true,
-        lastName: true,
-        phone: true,
-        birthdate: true,
-        likes: true,
-        favoriteClubs: true,
-        preferredFoods: true,
-        hobbies: true,
-        photoURL: true,
-      },
-    });
+  async findOne(
+    query: Prisma.UserWhereInput,
+    options?: { select: Prisma.UserSelect },
+  ) {
+    return await this.prisma.user.findFirst({ where: query, ...options });
   }
 
   async updateOne(

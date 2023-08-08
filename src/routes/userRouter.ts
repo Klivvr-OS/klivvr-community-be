@@ -13,14 +13,11 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const postObjects = await userService.findManyWithPagination(
+    const users = await userService.findManyWithPagination(
       {},
       { pageNumber, pageSize },
     );
-    if (!postObjects) {
-      throw new CustomError('Posts not found', 404);
-    }
-    res.status(200).json(postObjects);
+    res.status(200).json(users);
   }),
 );
 
@@ -29,7 +26,23 @@ router.get(
   isAuth,
   endpoint(async (req, res) => {
     const userId = Number(req.params.id);
-    const userObject = await userService.findOneById({ id: userId });
+    const userObject = await userService.findOne(
+      { id: userId },
+      {
+        select: {
+          firstName: true,
+          lastName: true,
+          photoURL: true,
+          phone: true,
+          hobbies: true,
+          birthdate: true,
+          email: true,
+          likes: true,
+          preferredFoods: true,
+          favoriteClubs: true,
+        },
+      },
+    );
     if (!userObject) {
       throw new CustomError('User not found', 404);
     }
