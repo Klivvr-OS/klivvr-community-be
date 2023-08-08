@@ -96,7 +96,7 @@ export class UserService {
     query: Prisma.UserWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
-    return await this.userRepo.findManyWithPagination(query, { ...options });
+    return await this.userRepo.findManyWithPagination(query, options );
   }
 
   async findOne(
