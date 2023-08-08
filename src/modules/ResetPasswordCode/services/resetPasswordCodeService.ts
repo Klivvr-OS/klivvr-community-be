@@ -58,7 +58,7 @@ export class ResetPasswordCodeService {
   }
 
   async resetPasswordRequest(email: string) {
-    const user = await userService.findOne({ email });
+    const user = await userService.findOneByEmail({ email });
     if (!user) {
       return;
     }

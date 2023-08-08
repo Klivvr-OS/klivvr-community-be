@@ -67,7 +67,9 @@ export class UserService {
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
-    const existingUser = await this.userRepo.findOne({ email: args.email });
+    const existingUser = await this.userRepo.findOneByEmail({
+      email: args.email,
+    });
     if (existingUser != null) {
       throw new CustomError('User already exists', 409);
     }
@@ -90,8 +92,19 @@ export class UserService {
     return createdUser;
   }
 
-  async findOne(args: Prisma.UserWhereInput) {
-    return await this.userRepo.findOne({ email: args.email });
+  async findManyWithPagination(
+    query: Prisma.UserWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.userRepo.findManyWithPagination(query, { ...options });
+  }
+
+  async findOneByEmail(args: Prisma.UserWhereInput) {
+    return await this.userRepo.findOneByEmail({ email: args.email });
+  }
+
+  async findOneById(args: Prisma.UserWhereUniqueInput) {
+    return await this.userRepo.findOneById({ id: args.id });
   }
 
   async updateOne(
@@ -102,7 +115,7 @@ export class UserService {
   }
 
   async checkVerificationCode(args: Prisma.UserWhereInput) {
-    const user = await this.userRepo.findOne({ email: args.email });
+    const user = await this.userRepo.findOneByEmail({ email: args.email });
     if (!user) {
       throw new CustomError('Invalid Credentials', 401);
     }
@@ -120,7 +133,7 @@ export class UserService {
   }
 
   async login(args: { email: string; password: string }) {
-    const user = await this.userRepo.findOne({ email: args.email });
+    const user = await this.userRepo.findOneByEmail({ email: args.email });
     if (!user?.isVerified) {
       throw new CustomError('Invalid Credentials', 401);
     }
@@ -152,7 +165,7 @@ export class UserService {
     }
     let user;
     if (typeof payload.id === 'number') {
-      user = await this.userRepo.findOne({ id: payload.id });
+      user = await this.userRepo.findOneByEmail({ id: payload.id });
     }
     if (!user) {
       throw new CustomError('Invalid token', 401);
