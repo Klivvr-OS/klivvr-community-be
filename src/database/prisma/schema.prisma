@@ -22,6 +22,7 @@ model User {
   favoriteClubs     String[]           @default([])
   preferredFoods    String[]           @default([])
   hobbies           String[]           @default([])
+  hiringDate        DateTime?
   Role              Role               @default(USER)
   verificationCode  String?
   isVerified        Boolean            @default(false)
