@@ -22,6 +22,7 @@ model User {
   favoriteClubs     String[]           @default([])
   preferredFoods    String[]           @default([])
   hobbies           String[]           @default([])
+  joined_klivvr     DateTime?
   Role              Role               @default(USER)
   verificationCode  String?
   isVerified        Boolean            @default(false)
