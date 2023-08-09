@@ -67,7 +67,9 @@ export class UserService {
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
-    const existingUser = await this.userRepo.findOne({ email: args.email });
+    const existingUser = await this.userRepo.findOne({
+      email: args.email,
+    });
     if (existingUser != null) {
       throw new CustomError('User already exists', 409);
     }
@@ -90,8 +92,18 @@ export class UserService {
     return createdUser;
   }
 
-  async findOne(args: Prisma.UserWhereInput) {
-    return await this.userRepo.findOne({ email: args.email });
+  async findManyWithPagination(
+    query: Prisma.UserWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.userRepo.findManyWithPagination(query, options);
+  }
+
+  async findOne(
+    args: Prisma.UserWhereInput,
+    options?: { select: Prisma.UserSelect },
+  ) {
+    return await this.userRepo.findOne(args, options);
   }
 
   async updateOne(
