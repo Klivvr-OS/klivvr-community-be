@@ -13,15 +13,11 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const usersWithBirthdays = await userService.findUsersBirthday({
-      pageNumber,
-      pageSize,
-    });
 
-    const usersAnniversaries = await userService.findUsersAnniversary({
-      pageNumber,
-      pageSize,
-    });
+    const [usersWithBirthdays, usersAnniversaries] = await Promise.all([
+      userService.findUsersBirthday({ pageNumber, pageSize }),
+      userService.findUsersAnniversary({ pageNumber, pageSize }),
+    ]);
 
     res.status(200).json({ usersWithBirthdays, usersAnniversaries });
   }),
