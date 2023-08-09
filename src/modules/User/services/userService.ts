@@ -64,7 +64,7 @@ export class UserService {
     favoriteClubs: z.array(z.string()).optional(),
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),
-    joinedKlivvr: z.coerce.date().optional(),
+    hiringDate: z.coerce.date().optional(),
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {

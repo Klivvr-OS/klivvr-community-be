@@ -77,14 +77,14 @@ export class UserRepo {
     return await this.prisma.$queryRaw`
     SELECT
         concat("firstName", ' ', "lastName") as "name",
-        date_part('year', age("joinedKlivvr")) as "years",
-        date_part('year', "joinedKlivvr")||'-'||date_part('month', "joinedKlivvr")||'-'||date_part('day', "joinedKlivvr") as "inKlivvrSince"
+        date_part('year', age("hiringDate")) as "years",
+        date_part('year', "hiringDate")||'-'||date_part('month', "hiringDate")||'-'||date_part('day', "hiringDate") as "inKlivvrSince"
       FROM
         "User"
       WHERE
-        date_part('month', "joinedKlivvr") = date_part('month', current_date)
+        date_part('month', "hiringDate") = date_part('month', current_date)
         AND
-        date_part('day', "joinedKlivvr") = date_part('day', current_date)
+        date_part('day', "hiringDate") = date_part('day', current_date)
       Order by
         "inKlivvrSince" DESC
       LIMIT
