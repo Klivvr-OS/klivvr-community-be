@@ -1,11 +1,22 @@
 import { Prisma, type PrismaClient } from '@prisma/client';
 import prisma from '../../../database/client';
+import { paginate } from '../../../helpers';
 
 export class UserRepo {
   constructor(private readonly prisma: PrismaClient) {}
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
     return await this.prisma.user.create({ data: args });
+  }
+
+  async findManyWithPagination(
+    query: Prisma.UserWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.prisma.user.findMany({
+      where: query,
+      ...paginate(options),
+    });
   }
 
   async findOne(query: Prisma.UserWhereInput) {

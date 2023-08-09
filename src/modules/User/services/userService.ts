@@ -64,6 +64,7 @@ export class UserService {
     favoriteClubs: z.array(z.string()).optional(),
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),
+    joined_klivvr: z.coerce.date().optional(),
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
@@ -179,6 +180,13 @@ export class UserService {
     }
 
     return accessToken;
+  }
+
+  async findManyWithPagination(
+    query: Prisma.UserWhereInput,
+    options: { pageNumber: number; pageSize: number },
+  ) {
+    return await this.userRepo.findManyWithPagination(query, { ...options });
   }
 }
 
