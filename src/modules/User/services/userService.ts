@@ -193,13 +193,6 @@ export class UserService {
 
     return accessToken;
   }
-
-  async findManyWithPagination(
-    query: Prisma.UserWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.userRepo.findManyWithPagination(query, { ...options });
-  }
 }
 
 export const userService = new UserService(userRepo);
