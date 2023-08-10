@@ -1,7 +1,7 @@
 import express from 'express';
 import { userService } from '../modules';
 import { endpoint } from '../core/endpoint';
-import { CustomError, isAuth } from '../middlewares';
+import { CustomError, isAuth, verifyModerator } from '../middlewares';
 import { requestQueryPaginationSchema } from '../helpers';
 
 const router = express.Router();
@@ -40,6 +40,7 @@ router.get(
           likes: true,
           preferredFoods: true,
           favoriteClubs: true,
+          KlivvrPicks: true,
         },
       },
     );
@@ -47,6 +48,27 @@ router.get(
       throw new CustomError('User not found', 404);
     }
     res.status(200).json(userObject);
+  }),
+);
+
+router.put(
+  '/:id',
+  isAuth,
+  verifyModerator,
+  endpoint(async (req, res) => {
+    const userId = Number(req.params.id);
+    const userObject = await userService.nominateUser({ id: userId });
+    if (!userObject) {
+      throw new CustomError('User not found', 404);
+    }
+    res
+      .status(200)
+      .json(
+        userObject.firstName +
+          ' ' +
+          userObject.lastName +
+          ' has been nominated',
+      );
   }),
 );
 
