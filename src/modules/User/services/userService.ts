@@ -145,13 +145,21 @@ export class UserService {
     if (!isPasswordCorrect) {
       throw new CustomError('Invalid Credentials', 401);
     }
-    const accessToken = sign({ id: user.id }, secretAccessKey, {
-      expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
-    });
+    const accessToken = sign(
+      { id: user.id, role: user.Role, nominated: user.Role },
+      secretAccessKey,
+      {
+        expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
+      },
+    );
 
-    const refreshToken = sign({ id: user.id }, secretRefreshKey, {
-      expiresIn: REFRESH_TOKEN_EXPIRY_TIME,
-    });
+    const refreshToken = sign(
+      { id: user.id, role: user.Role, nominated: user.Role },
+      secretRefreshKey,
+      {
+        expiresIn: REFRESH_TOKEN_EXPIRY_TIME,
+      },
+    );
 
     return { user, accessToken, refreshToken };
   }
@@ -203,6 +211,11 @@ export class UserService {
     pageSize: number;
   }) {
     return await this.userRepo.findUsersAnniversaries(options);
+  }
+
+  async nominateUser(args: { id: number }) {
+    await this.userRepo.resetAllNominations();
+    return await this.updateOne(args, { nominated: true });
   }
 }
 
