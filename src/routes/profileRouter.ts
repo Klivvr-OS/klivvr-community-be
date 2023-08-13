@@ -1,7 +1,12 @@
 import express from 'express';
 import { userService } from '../modules';
 import { endpoint } from '../core/endpoint';
-import { multerUpload, handleMulterError, isAuth } from '../middlewares';
+import {
+  multerUpload,
+  handleMulterError,
+  isAuth,
+  CustomError,
+} from '../middlewares';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
@@ -9,7 +14,7 @@ const router = express.Router();
 router.put(
   '/me',
   isAuth,
-  multerUpload.single('avatar'),
+  multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {
     const userId = req.user?.id;
@@ -28,6 +33,14 @@ router.put(
       ...req.body,
       photoURL,
     });
+    if (updateUserSchema.phone) {
+      const isPhoneExist = await userService.findOne({
+        phone: updateUserSchema.phone,
+      });
+      if (isPhoneExist) {
+        throw new CustomError('Phone number already exist', 409);
+      }
+    }
     await userService.updateOne({ id: userId }, updateUserSchema);
     res
       .status(200)
