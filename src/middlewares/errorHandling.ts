@@ -24,13 +24,6 @@ export const errorHandlerMiddleware = (
 
   if (err instanceof ZodError) {
     const errors = err.issues.map((issue) => {
-      if (issue.path[0] === 'photoURL') {
-        return {
-          field: 'image',
-          message: issue.message,
-        };
-      }
-
       return {
         field: issue.path.join('.'),
         message: issue.message,
