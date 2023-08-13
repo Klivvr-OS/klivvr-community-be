@@ -52,10 +52,26 @@ router.post(
 );
 
 router.post(
+  '/resend-verification-code',
+  endpoint(async (req, res) => {
+    const email = userService.resendVerificationCodeSchema.parse(req.body);
+    await userService.resendVerificationCode(email);
+    res.status(200).json({ message: 'Verification code sent successfully' });
+  }),
+);
+
+router.post(
   '/login',
   endpoint(async (req, res) => {
     const userScehma = userService.loginUserSchema.parse(req.body);
     const { email, password } = userScehma;
+    const isVerifiedUser = await userService.findOne({ email });
+    if (isVerifiedUser?.isVerified === false) {
+      res
+        .status(401)
+        .json({ message: 'Unauthorized ', data: { isVerified: false } });
+      return;
+    }
     const user = await userService.login({ email, password });
     res.cookie('accessToken', user.accessToken, {
       httpOnly: true,
@@ -65,7 +81,11 @@ router.post(
       httpOnly: true,
       maxAge: 7 * DAY,
     });
-    res.status(200).json({ message: 'User logged in successfully' });
+    res.status(200).json({
+      message: 'User logged in successfully',
+      accessToken: user.accessToken,
+      refreshToken: user.refreshToken,
+    });
   }),
 );
 
