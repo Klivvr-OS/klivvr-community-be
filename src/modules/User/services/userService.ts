@@ -67,6 +67,10 @@ export class UserService {
     hiringDate: z.coerce.date().optional(),
   });
 
+  resendVerificationCodeSchema = z.object({
+    email: z.string().email().toLowerCase().trim(),
+  });
+
   async createOne(args: Prisma.UserUncheckedCreateInput) {
     const existingUser = await this.userRepo.findOne({
       email: args.email,
@@ -203,6 +207,27 @@ export class UserService {
     pageSize: number;
   }) {
     return await this.userRepo.findUsersAnniversaries(options);
+  }
+
+  async resendVerificationCode(args: { email: string }) {
+    const user = await this.userRepo.findOne({ email: args.email });
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+    if (user.isVerified) {
+      throw new CustomError('Forbidden', 403);
+    }
+    const code = generateCode();
+    await sendGridEmail(
+      args.email,
+      sendGridSubject,
+      sendGridText,
+      `${sendGridHTML}<br><p>Your verification code is: <strong>${code}</strong></p>`,
+    );
+    return await this.userRepo.updateOne(
+      { id: user.id },
+      { verificationCode: code },
+    );
   }
 }
 
