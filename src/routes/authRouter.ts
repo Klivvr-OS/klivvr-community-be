@@ -15,7 +15,7 @@ router.post(
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {
-    let photoURL;
+    let image;
     if (req.file) {
       const localFilePath = req.file.path;
       const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
@@ -24,11 +24,11 @@ router.post(
       if (!isSuccess) {
         throw new Error();
       }
-      photoURL = imageURL;
+      image = imageURL;
     }
     const userScehma = userService.createUserSchema.parse({
       ...req.body,
-      photoURL,
+      image,
     });
     await userService.createOne(userScehma);
     res.status(201).json({

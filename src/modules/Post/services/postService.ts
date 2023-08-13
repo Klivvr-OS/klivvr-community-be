@@ -16,7 +16,7 @@ export class PostService {
       .string()
       .nonempty({ message: 'Description cannot be empty' })
       .optional(),
-    photoURL: z.string().optional(),
+    image: z.string().optional(),
   });
 
   async createOne(args: Prisma.PostUncheckedCreateInput) {
