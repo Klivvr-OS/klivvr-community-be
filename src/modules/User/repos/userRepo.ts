@@ -93,13 +93,6 @@ export class UserRepo {
         ${skip}
     `;
   }
-
-  async resetAllNominations() {
-    return await this.prisma.user.updateMany({
-      where: { nominated: true },
-      data: { nominated: false },
-    });
-  }
 }
 
 export const userRepo = new UserRepo(prisma);

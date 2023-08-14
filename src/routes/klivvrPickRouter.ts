@@ -5,13 +5,30 @@ import {
   isAuth,
   multerUpload,
   isNominated,
+  verifyModerator,
 } from '../middlewares';
 import { endpoint } from '../core/endpoint';
 import { requestQueryPaginationSchema } from '../helpers';
 import { klivvrPickService } from '../modules/KilvvrPick';
+import { klivvrPickNomineeService } from '../modules/KlivvrPickNominee';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
+
+router.post(
+  '/nominate',
+  isAuth,
+  verifyModerator,
+  endpoint(async (req, res) => {
+    const nominatorUserId = Number(req.user?.id);
+    const { nomineeId } = req.body as { nomineeId: number };
+    const klivvrPickNomineeObject = await klivvrPickNomineeService.nominate(
+      nomineeId,
+      nominatorUserId,
+    );
+    res.status(201).json(klivvrPickNomineeObject);
+  }),
+);
 
 router.get(
   '/',
@@ -74,6 +91,7 @@ router.post(
   isAuth,
   isNominated,
   endpoint(async (req, res) => {
+    const userId = req.user?.id;
     let photoURL;
     if (req.file) {
       const localFilePath = req.file.path;
@@ -85,14 +103,13 @@ router.post(
       }
       photoURL = imageURL;
     }
-    const userId = req.user?.id;
     const validatedKlivvrPick = klivvrPickService.createKlivvrPickSchema.parse({
       ...req.body,
       photoURL,
     });
     const klivvrPickObject = await klivvrPickService.createOne({
       ...validatedKlivvrPick,
-      userId: userId as number,
+      nomineeId: userId as number,
     });
     res.status(200).json(klivvrPickObject);
   }),
@@ -103,17 +120,9 @@ router.put(
   multerUpload.single('image'),
   handleMulterError,
   isAuth,
-  isNominated,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
-    const klivvrPick = await klivvrPickService.findOne({ id });
-    if (!klivvrPick) {
-      throw new CustomError('Klivvr Pick not found', 404);
-    }
-    const user = req.user;
-    if (klivvrPick.userId !== user?.id) {
-      throw new CustomError('Forbidden', 403);
-    }
+    await klivvrPickService.findOneWithError({ id, nomineeId: req.user?.id });
     let photoURL;
     if (req.file) {
       const localFilePath = req.file.path;
@@ -140,17 +149,9 @@ router.put(
 router.delete(
   '/:id',
   isAuth,
-  isNominated,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
-    const klivvrPick = await klivvrPickService.findOne({ id });
-    if (!klivvrPick) {
-      throw new CustomError('Klivvr Pick not found', 404);
-    }
-    const user = req.user;
-    if (klivvrPick.userId !== user?.id) {
-      throw new CustomError('Forbidden', 403);
-    }
+    await klivvrPickService.findOneWithError({ id, nomineeId: req.user?.id });
     const deletedKlivvrPickObject = await klivvrPickService.deleteOne({ id });
     res.status(200).json(deletedKlivvrPickObject);
   }),

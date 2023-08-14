@@ -2,6 +2,7 @@ import { type Request, Response, NextFunction } from 'express';
 import { userService } from '../modules';
 import { secretAccessKey } from '../config';
 import { CustomError } from './errorHandling';
+import { klivvrPickNomineeService } from '../modules/KlivvrPickNominee';
 
 const authenticateUser = async (req: Request, next: NextFunction) => {
   try {
@@ -36,7 +37,10 @@ export const isNominated = async (
   next: NextFunction,
 ) => {
   const user = await authenticateUser(req, next);
-  if (user?.nominated) {
+  const nominated = await klivvrPickNomineeService.isNominated(
+    user?.id as number,
+  );
+  if (nominated) {
     next();
   } else {
     next(new CustomError('User is not nominated', 401));
@@ -53,18 +57,5 @@ export const verifyModerator = async (
     next();
   } else {
     next(new CustomError('User is not a Klivvr Pick Moderator', 401));
-  }
-};
-
-export const verifyAdmin = async (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-) => {
-  const user = await authenticateUser(req, next);
-  if (user?.Role === 'ADMIN') {
-    next();
-  } else {
-    next(new CustomError('User is not an Admin', 401));
   }
 };

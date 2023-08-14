@@ -146,7 +146,7 @@ export class UserService {
       throw new CustomError('Invalid Credentials', 401);
     }
     const accessToken = sign(
-      { id: user.id, role: user.Role, nominated: user.Role },
+      { id: user.id, role: user.Role },
       secretAccessKey,
       {
         expiresIn: ACCESS_TOKEN_EXPIRY_TIME,
@@ -154,7 +154,7 @@ export class UserService {
     );
 
     const refreshToken = sign(
-      { id: user.id, role: user.Role, nominated: user.Role },
+      { id: user.id, role: user.Role },
       secretRefreshKey,
       {
         expiresIn: REFRESH_TOKEN_EXPIRY_TIME,
@@ -211,11 +211,6 @@ export class UserService {
     pageSize: number;
   }) {
     return await this.userRepo.findUsersAnniversaries(options);
-  }
-
-  async nominateUser(args: { id: number }) {
-    await this.userRepo.resetAllNominations();
-    return await this.updateOne(args, { nominated: true });
   }
 }
 

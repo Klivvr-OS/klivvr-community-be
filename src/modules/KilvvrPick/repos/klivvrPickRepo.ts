@@ -23,7 +23,6 @@ export class KlivvrPickRepo {
         link: true,
         category: true,
         photoURL: true,
-        userId: true,
       },
     });
   }
@@ -57,12 +56,22 @@ export class KlivvrPickRepo {
             CASE 
                 WHEN EXTRACT(DOW FROM current_date)::integer = 4 THEN current_date 
                 ELSE current_date - (EXTRACT(DOW FROM current_date)::integer + 3) % 7
-            END + interval '7 days';
-    LIMIT
-      ${take}
-    OFFSET
+            END + interval '7 days'
+    LIMIT 
+      ${take} 
+    OFFSET 
       ${skip}
     `;
+  }
+
+  async findPickByUser(
+    query: { userId: number },
+    options?: { select: Prisma.KlivvrPickSelect },
+  ) {
+    return await this.client.klivvrPick.findMany({
+      where: { nomineeId: query.userId },
+      ...options,
+    });
   }
 
   async updateOne(
