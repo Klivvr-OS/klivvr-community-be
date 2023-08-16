@@ -1,6 +1,6 @@
 import { userRepo, type UserRepo } from '../repos/userRepo';
 import { Prisma } from '@prisma/client';
-import sendGridEmail from '../../../mailers/sendEmail';
+import { sendingEmails } from '../../../mailers/sendEmail';
 import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
@@ -28,7 +28,7 @@ export class UserService {
         .toLowerCase()
         .trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
-      photoURL: z.string(),
+      image: z.string(),
     })
     .required();
 
@@ -54,7 +54,7 @@ export class UserService {
       .string()
       .min(3, { message: 'Last name is too short' })
       .optional(),
-    photoURL: z.string().optional(),
+    image: z.string().optional(),
     phone: z
       .string()
       .regex(/^01[0-2,5]{1}[0-9]{8}$/, { message: 'Invalid phone number' })
@@ -65,6 +65,10 @@ export class UserService {
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),
     hiringDate: z.coerce.date().optional(),
+  });
+
+  resendVerificationCodeSchema = z.object({
+    email: z.string().email().toLowerCase().trim(),
   });
 
   async createOne(args: Prisma.UserUncheckedCreateInput) {
@@ -81,11 +85,14 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
-    await sendGridEmail(
-      createdUser.email,
-      sendGridSubject,
-      sendGridText,
-      `${sendGridHTML}<br><p>Your verification code is: <strong>${code}</strong></p>`,
+    await sendingEmails(
+      {
+        to: args.email,
+        subject: sendGridSubject,
+        text: sendGridText,
+        html: sendGridHTML,
+      },
+      code,
     );
     if (createdUser == null) {
       throw new CustomError('Internal Server Error', 500);
@@ -203,6 +210,30 @@ export class UserService {
     pageSize: number;
   }) {
     return await this.userRepo.findUsersAnniversaries(options);
+  }
+
+  async resendVerificationCode(args: { email: string }) {
+    const user = await this.userRepo.findOne({ email: args.email });
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+    if (user.isVerified) {
+      throw new CustomError('Forbidden', 403);
+    }
+    const code = generateCode();
+    await sendingEmails(
+      {
+        to: user.email,
+        subject: sendGridSubject,
+        text: sendGridText,
+        html: sendGridHTML,
+      },
+      code,
+    );
+    return await this.userRepo.updateOne(
+      { id: user.id },
+      { verificationCode: code },
+    );
   }
 }
 

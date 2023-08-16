@@ -32,7 +32,7 @@ router.get(
         select: {
           firstName: true,
           lastName: true,
-          photoURL: true,
+          image: true,
           phone: true,
           hobbies: true,
           birthdate: true,
