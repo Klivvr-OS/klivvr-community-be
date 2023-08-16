@@ -1,6 +1,5 @@
 import express from 'express';
 import { endpoint } from '../core/endpoint';
-import { isAuth } from '../middlewares';
 import { requestQueryPaginationSchema } from '../helpers';
 import { userService } from '../modules';
 
@@ -8,7 +7,6 @@ const router = express.Router();
 
 router.get(
   '/',
-  isAuth,
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,

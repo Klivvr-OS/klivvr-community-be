@@ -2,7 +2,6 @@ import express from 'express';
 import {
   CustomError,
   handleMulterError,
-  isAuth,
   multerUpload,
   isNominated,
   verifyModerator,
@@ -17,7 +16,6 @@ const router = express.Router();
 
 router.post(
   '/nominate',
-  isAuth,
   verifyModerator,
   endpoint(async (req, res) => {
     const nominatorUserId = Number(req.user?.id);
@@ -32,7 +30,6 @@ router.post(
 
 router.get(
   '/',
-  isAuth,
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
@@ -47,7 +44,6 @@ router.get(
 
 router.get(
   '/this-week-picks',
-  isAuth,
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
@@ -62,7 +58,6 @@ router.get(
 
 router.get(
   '/:id',
-  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     const klivvrPick = await klivvrPickService.findOne(
@@ -88,7 +83,6 @@ router.post(
   '/',
   multerUpload.single('image'),
   handleMulterError,
-  isAuth,
   isNominated,
   endpoint(async (req, res) => {
     const userId = req.user?.id;
@@ -119,7 +113,6 @@ router.put(
   '/:id',
   multerUpload.single('image'),
   handleMulterError,
-  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     await klivvrPickService.findOneWithError({ id, nomineeId: req.user?.id });
@@ -148,7 +141,6 @@ router.put(
 
 router.delete(
   '/:id',
-  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     await klivvrPickService.findOneWithError({ id, nomineeId: req.user?.id });

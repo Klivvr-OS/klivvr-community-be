@@ -5,11 +5,13 @@ import profileRouter from './profileRouter';
 import eventRouter from './eventRouter';
 import userRouter from './userRouter';
 import klivvrPickRouter from './klivvrPickRouter';
+import { isAuth } from '../middlewares';
 
 const router = express.Router();
 
-router.use('/posts', postRouter);
 router.use('/auth', authRouter);
+router.use(isAuth);
+router.use('/posts', postRouter);
 router.use('/profile', profileRouter);
 router.use('/events', eventRouter);
 router.use('/klivvr-picks', klivvrPickRouter);

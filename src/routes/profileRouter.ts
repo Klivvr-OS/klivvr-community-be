@@ -1,14 +1,13 @@
 import express from 'express';
 import { userService } from '../modules';
 import { endpoint } from '../core/endpoint';
-import { multerUpload, handleMulterError, isAuth } from '../middlewares';
+import { multerUpload, handleMulterError } from '../middlewares';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
 
 router.put(
   '/me',
-  isAuth,
   multerUpload.single('avatar'),
   handleMulterError,
   endpoint(async (req, res) => {

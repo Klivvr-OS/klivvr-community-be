@@ -1,7 +1,7 @@
 import express from 'express';
 import { userService } from '../modules';
 import { endpoint } from '../core/endpoint';
-import { CustomError, isAuth } from '../middlewares';
+import { CustomError } from '../middlewares';
 import { requestQueryPaginationSchema } from '../helpers';
 import { klivvrPickService } from '../modules/KilvvrPick';
 
@@ -9,7 +9,6 @@ const router = express.Router();
 
 router.get(
   '/',
-  isAuth,
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
@@ -24,7 +23,6 @@ router.get(
 
 router.get(
   '/:id',
-  isAuth,
   endpoint(async (req, res) => {
     const userId = Number(req.params.id);
     const klivvrPicks = await klivvrPickService.findPickByUser(
