@@ -15,7 +15,7 @@ router.post(
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req: Request, res: Response) => {
-    let photoURL;
+    let image;
     if (req.file) {
       const localFilePath = req.file.path;
       const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
@@ -24,13 +24,13 @@ router.post(
       if (!isSuccess) {
         throw new Error();
       }
-      photoURL = imageURL;
+      image = imageURL;
     }
     const userId = req.user?.id;
     const { description } = postService.createPostSchema.parse(req.body);
     const newpostObject = await postService.createOne({
       description,
-      photoURL,
+      image,
       userId: userId as number,
     });
     res.status(201).json(newpostObject);
@@ -80,7 +80,7 @@ router.put(
     if (post.userId !== userId) {
       throw new CustomError('Forbidden', 403);
     }
-    let photoURL;
+    let image;
     if (req.file) {
       const localFilePath = req.file.path;
       const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
@@ -89,12 +89,12 @@ router.put(
       if (!isSuccess) {
         throw new Error();
       }
-      photoURL = imageURL;
+      image = imageURL;
     }
     const { description } = postService.updatePostSchema.parse(req.body);
     const updatedpostObject = await postService.updateOne(
       { id },
-      { description, photoURL },
+      { description, image },
     );
     res.status(200).json(updatedpostObject);
   }),

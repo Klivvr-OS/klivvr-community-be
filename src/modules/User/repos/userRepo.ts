@@ -20,7 +20,7 @@ export class UserRepo {
       select: {
         firstName: true,
         lastName: true,
-        photoURL: true,
+        image: true,
         phone: true,
       },
     });
