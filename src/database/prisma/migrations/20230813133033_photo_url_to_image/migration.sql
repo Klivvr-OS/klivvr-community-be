@@ -7,4 +7,5 @@
 */
 -- AlterTable
 ALTER TABLE "User" RENAME COLUMN "photoURL" TO "image";
+ALTER TABLE "User" ALTER COLUMN "image" SET DEFAULT '';
 ALTER TABLE "User" ALTER COLUMN "image" SET NOT NULL;
