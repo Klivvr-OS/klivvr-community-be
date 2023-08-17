@@ -23,10 +23,6 @@ export class KlivvrPickNomineeService {
     return await this.klivvrPickNomineeRepo.findMany();
   }
 
-  //   async findThisWeeksPicks(options: { pageNumber: number; pageSize: number }) {
-  //     return await this.klivvrPickNomineeRepo.findThisWeeksPick(options);
-  //   }
-
   async updateOne(
     query: Prisma.KlivvrPickNomineeWhereUniqueInput,
     args: Prisma.KlivvrPickNomineeUpdateInput,

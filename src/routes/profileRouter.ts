@@ -1,7 +1,7 @@
 import express from 'express';
 import { userService } from '../modules';
 import { endpoint } from '../core/endpoint';
-import { multerUpload, handleMulterError } from '../middlewares';
+import { multerUpload, handleMulterError, CustomError } from '../middlewares';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
