@@ -29,13 +29,16 @@ model User {
   image             String
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  posts             Post[]
+  posts             Post[]      
   resetPasswordCode ResetPasswordCode?
+  nominatedUser     KlivvrPickNominee[] @relation("Nominee")
+  nominatorUser     KlivvrPickNominee[] @relation("Nominator")
 }
 
 enum Role {
   USER
   ADMIN
+  PICK_MODERATOR
 }
 
 model Post {
@@ -55,4 +58,28 @@ model ResetPasswordCode {
   userId    Int      @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model KlivvrPick {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String
+  link        String
+  category    String
+  photoURL    String?
+  nominee     KlivvrPickNominee @relation(fields: [nomineeId], references: [nomineeId])
+  nomineeId   Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model KlivvrPickNominee {
+  id          Int          @id @default(autoincrement())
+  startDate   DateTime     
+  endDate     DateTime
+  nominee     User         @relation("Nominee", fields: [nomineeId], references: [id])
+  nomineeId   Int          @unique
+  nominator   User         @relation("Nominator", fields: [nominatorId], references: [id])
+  nominatorId Int          
+  KlivvrPick  KlivvrPick[]
 }

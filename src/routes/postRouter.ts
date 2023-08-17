@@ -6,14 +6,12 @@ import { handleMulterError } from '../middlewares/Multer';
 import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
-import { isAuth } from '../middlewares/';
 import { requestQueryPaginationSchema } from '../helpers';
 
 const router = express.Router();
 
 router.post(
   '/',
-  isAuth,
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req: Request, res: Response) => {
@@ -41,7 +39,6 @@ router.post(
 
 router.get(
   '/',
-  isAuth,
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
@@ -59,7 +56,6 @@ router.get(
 
 router.get(
   '/:id',
-  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     const postObject = await postService.findOne({ id });
@@ -72,7 +68,6 @@ router.get(
 
 router.put(
   '/:id',
-  isAuth,
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {
@@ -107,7 +102,6 @@ router.put(
 
 router.delete(
   '/:id',
-  isAuth,
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     const post = await postService.findOne({ id });
