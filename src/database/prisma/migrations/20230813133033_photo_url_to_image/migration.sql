@@ -6,5 +6,6 @@
 
 */
 -- AlterTable
-ALTER TABLE "User" DROP COLUMN "image",
-ADD COLUMN     "image" TEXT NOT NULL;
+ALTER TABLE "User" RENAME COLUMN "photoURL" TO "image";
+ALTER TABLE "User" ALTER COLUMN "image" SET DEFAULT '';
+ALTER TABLE "User" ALTER COLUMN "image" SET NOT NULL;
