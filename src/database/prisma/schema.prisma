@@ -11,25 +11,27 @@ datasource db {
 }
 
 model User {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique
+  id                Int                 @id @default(autoincrement())
+  email             String              @unique
   password          String
   firstName         String
   lastName          String
-  phone             String?            @unique
+  phone             String?             @unique
   birthdate         DateTime?
-  likes             String[]           @default([])
-  favoriteClubs     String[]           @default([])
-  preferredFoods    String[]           @default([])
-  hobbies           String[]           @default([])
+  interests         String[]            @default([])
+  favoriteClubs     String[]            @default([])
+  preferredFoods    String[]            @default([])
+  hobbies           String[]            @default([])
+  address           String?
+  aboutMe           String?
   hiringDate        DateTime?
-  Role              Role               @default(USER)
+  Role              Role                @default(USER)
   verificationCode  String?
-  isVerified        Boolean            @default(false)
+  isVerified        Boolean             @default(false)
   image             String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  posts             Post[]      
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  posts             Post[]
   resetPasswordCode ResetPasswordCode?
   nominatedUser     KlivvrPickNominee[] @relation("Nominee")
   nominatorUser     KlivvrPickNominee[] @relation("Nominator")
@@ -75,11 +77,11 @@ model KlivvrPick {
 
 model KlivvrPickNominee {
   id          Int          @id @default(autoincrement())
-  startDate   DateTime     
+  startDate   DateTime
   endDate     DateTime
   nominee     User         @relation("Nominee", fields: [nomineeId], references: [id])
   nomineeId   Int          @unique
   nominator   User         @relation("Nominator", fields: [nominatorId], references: [id])
-  nominatorId Int          
+  nominatorId Int
   KlivvrPick  KlivvrPick[]
 }

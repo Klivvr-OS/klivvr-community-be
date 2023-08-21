@@ -48,7 +48,7 @@ router.get(
           hobbies: true,
           birthdate: true,
           email: true,
-          likes: true,
+          interests: true,
           preferredFoods: true,
           favoriteClubs: true,
         },
