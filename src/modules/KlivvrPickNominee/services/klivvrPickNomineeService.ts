@@ -81,14 +81,13 @@ export class KlivvrPickNomineeService {
   async nominate(nomineeId: number, nominatorId: number) {
     const { start, end } = this.getThisWeekRange();
     const today = new Date();
-    if (![4, 5, 6].includes(today.getDay()))
-      throw new CustomError('Today is Not a Weekend', 403);
     const startDate = today;
+    const daysUntilWednesday = (3 - today.getDay() + 7) % 7;
     const endDate = new Date(today);
-    endDate.setDate(today.getDate() + 6);
+    endDate.setDate(today.getDate() + daysUntilWednesday);
     const existingNominee = await this.getNomineeForDateRange(start, end);
     if (existingNominee)
-      throw new CustomError('There is Already a Nominee For This Weekend', 403);
+      throw new CustomError('There is Already a Nominee', 403);
     return await this.upsertOne(nomineeId, nominatorId, startDate, endDate);
   }
 }
