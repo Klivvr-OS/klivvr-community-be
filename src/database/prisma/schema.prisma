@@ -11,28 +11,30 @@ datasource db {
 }
 
 model User {
-  id                Int                @id @default(autoincrement())
-  email             String             @unique
+  id                Int                 @id @default(autoincrement())
+  email             String              @unique
   password          String
   firstName         String
   lastName          String
-  phone             String?            @unique
+  phone             String?             @unique
   birthdate         DateTime?
-  likes             String[]           @default([])
-  favoriteClubs     String[]           @default([])
-  preferredFoods    String[]           @default([])
-  hobbies           String[]           @default([])
+  likes             String[]            @default([])
+  favoriteClubs     String[]            @default([])
+  preferredFoods    String[]            @default([])
+  hobbies           String[]            @default([])
   hiringDate        DateTime?
-  Role              Role               @default(USER)
+  Role              Role                @default(USER)
   verificationCode  String?
-  isVerified        Boolean            @default(false)
+  isVerified        Boolean             @default(false)
   image             String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  posts             Post[]      
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  posts             Post[]
+  comments          Comment[]
   resetPasswordCode ResetPasswordCode?
   nominatedUser     KlivvrPickNominee[] @relation("Nominee")
   nominatorUser     KlivvrPickNominee[] @relation("Nominator")
+  Like              Like[]
 }
 
 enum Role {
@@ -42,13 +44,36 @@ enum Role {
 }
 
 model Post {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   description String
   image       String?
-  user        User     @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
   userId      Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  likes       Like[]
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ResetPasswordCode {
@@ -75,11 +100,11 @@ model KlivvrPick {
 
 model KlivvrPickNominee {
   id          Int          @id @default(autoincrement())
-  startDate   DateTime     
+  startDate   DateTime
   endDate     DateTime
   nominee     User         @relation("Nominee", fields: [nomineeId], references: [id])
   nomineeId   Int          @unique
   nominator   User         @relation("Nominator", fields: [nominatorId], references: [id])
-  nominatorId Int          
+  nominatorId Int
   KlivvrPick  KlivvrPick[]
 }
