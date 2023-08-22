@@ -61,16 +61,12 @@ export class PostService {
     return await this.postRepo.unlike(args);
   }
 
-  async countLikes(query: Prisma.LikeWhereInput) {
-    return await this.postRepo.countLikes(query);
+  async countLikesAndComments(postId?: number) {
+    return await this.postRepo.countLikesAndComments(postId);
   }
 
   async createComment(args: Prisma.CommentUncheckedCreateInput) {
     return await this.postRepo.createComment(args);
-  }
-
-  async countComments(query: Prisma.CommentWhereInput) {
-    return await this.postRepo.countComments(query);
   }
 
   async findPostComments(

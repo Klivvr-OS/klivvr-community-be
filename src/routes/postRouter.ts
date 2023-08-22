@@ -50,25 +50,8 @@ router.get(
     if (!postObjects) {
       throw new CustomError('Posts not found', 404);
     }
-    const postIds = postObjects.map((post) => post.id);
-    const likes = await postService.countLikes({ postId: { in: postIds } });
-    const comments = await postService.countComments({
-      postId: { in: postIds },
-    });
-    const likesCounts = {} as Record<number, number>,
-      commentsCounts = {} as Record<number, number>;
-    likes.forEach((like) => {
-      likesCounts[like.postId] = like._count.postId;
-    });
-    comments.forEach((comment) => {
-      commentsCounts[comment.postId] = comment._count.postId;
-    });
-    const postsWithCounts = postObjects.map((post) => ({
-      ...post,
-      likes: likesCounts[post.id] || 0,
-      comments: commentsCounts[post.id] || 0,
-    }));
-    res.status(200).json(postsWithCounts);
+    const totalLikesComments = await postService.countLikesAndComments();
+    res.status(200).json({ posts: totalLikesComments });
   }),
 );
 
@@ -80,7 +63,8 @@ router.get(
     if (!postObject) {
       throw new CustomError('Post not found', 404);
     }
-    res.status(200).json(postObject);
+    const post = await postService.countLikesAndComments(id);
+    res.status(200).json(post);
   }),
 );
 

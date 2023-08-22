@@ -47,24 +47,44 @@ export class PostRepo {
     return await this.client.like.delete({ where: args });
   }
 
-  async countLikes(query: Prisma.LikeWhereInput) {
-    return await this.client.like.groupBy({
-      by: ['postId'],
-      _count: { postId: true },
-      where: query,
-    });
+  async countLikesAndComments(postId?: number) {
+    const postIdQuery = postId
+      ? Prisma.sql`and p.id = ${postId}`
+      : Prisma.sql``;
+    return await this.client.$queryRaw`
+    select
+      p.*,
+      coalesce(l.likes::int, 0) as "likes",
+      coalesce(c.comments::int, 0) as "comments"
+    from
+      "Post" p
+    left join (
+      select
+        "postId",
+        COUNT(*) as "likes"
+      from
+        "Like"
+      group by
+        "postId"
+    ) l on
+      p.id = l."postId" 
+    left join (
+      select
+        "postId",
+        COUNT(*) as "comments"
+      from
+        "Comment"
+      group by
+        "postId"
+    ) c on
+      p.id = c."postId"
+    where true
+      ${postIdQuery};
+    `;
   }
 
   async createComment(args: Prisma.CommentUncheckedCreateInput) {
     return await this.client.comment.create({ data: args });
-  }
-
-  async countComments(query: Prisma.CommentWhereInput) {
-    return await this.client.comment.groupBy({
-      by: ['postId'],
-      _count: { postId: true },
-      where: query,
-    });
   }
 
   async findPostComments(
