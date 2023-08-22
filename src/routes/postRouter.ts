@@ -50,7 +50,25 @@ router.get(
     if (!postObjects) {
       throw new CustomError('Posts not found', 404);
     }
-    res.status(200).json(postObjects);
+    const postIds = postObjects.map((post) => post.id);
+    const likes = await postService.countLikes({ postId: { in: postIds } });
+    const comments = await postService.countComments({
+      postId: { in: postIds },
+    });
+    const likesCounts = {} as Record<number, number>,
+      commentsCounts = {} as Record<number, number>;
+    likes.forEach((like) => {
+      likesCounts[like.postId] = like._count.postId;
+    });
+    comments.forEach((comment) => {
+      commentsCounts[comment.postId] = comment._count.postId;
+    });
+    const postsWithCounts = postObjects.map((post) => ({
+      ...post,
+      likes: likesCounts[post.id] || 0,
+      comments: commentsCounts[post.id] || 0,
+    }));
+    res.status(200).json(postsWithCounts);
   }),
 );
 
@@ -114,6 +132,88 @@ router.delete(
     }
     const deletedpostObject = await postService.deleteOne({ id });
     res.status(200).json(deletedpostObject);
+  }),
+);
+
+router.post(
+  '/:id/like',
+  endpoint(async (req, res) => {
+    const id = Number(req.params.id);
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+    const like = await postService.findLike({
+      userId: req.user?.id as number,
+      postId: id,
+    });
+    if (like) {
+      throw new CustomError('Forbidden', 403);
+    }
+    const userId = req.user?.id;
+    await postService.addLike({
+      userId: userId as number,
+      postId: id,
+    });
+    res.status(200).json({ message: 'Liked' });
+  }),
+);
+
+router.delete(
+  '/:id/unlike',
+  endpoint(async (req, res) => {
+    const id = Number(req.params.id);
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+    const userId = req.user?.id;
+    const like = await postService.findLike({
+      userId: userId as number,
+      postId: id,
+    });
+    if (like) {
+      await postService.unlike({ id: like.id });
+    }
+    res.status(200).json({ message: 'Unliked' });
+  }),
+);
+
+router.post(
+  '/:id/comments',
+  endpoint(async (req, res) => {
+    const id = Number(req.params.id);
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+    const userId = req.user?.id;
+    const { content } = postService.createCommentSchema.parse(req.body);
+    const postComments = await postService.createComment({
+      content,
+      userId: userId as number,
+      postId: id,
+    });
+    res.status(201).json(postComments);
+  }),
+);
+
+router.get(
+  '/:id/comments',
+  endpoint(async (req, res) => {
+    const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
+      req.query,
+    );
+    const id = Number(req.params.id);
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+    const postComments = await postService.findPostComments(
+      { postId: id },
+      { pageNumber, pageSize },
+    );
+    res.status(200).json({ post: post, comments: postComments });
   }),
 );
 
