@@ -47,7 +47,11 @@ export class PostRepo {
     return await this.client.like.delete({ where: args });
   }
 
-  async countLikesAndComments(postId?: number) {
+  async countLikesAndComments(
+    options: { pageNumber: number; pageSize: number },
+    postId?: number,
+  ) {
+    const { skip, take } = paginate(options);
     const postIdQuery = postId
       ? Prisma.sql`and p.id = ${postId}`
       : Prisma.sql``;
@@ -79,7 +83,13 @@ export class PostRepo {
     ) c on
       p.id = c."postId"
     where true
-      ${postIdQuery};
+      ${postIdQuery}
+      Order by
+        "createdAt" DESC
+      LIMIT
+        ${take}
+      OFFSET
+        ${skip}
     `;
   }
 

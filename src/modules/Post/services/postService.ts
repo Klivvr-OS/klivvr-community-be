@@ -61,8 +61,14 @@ export class PostService {
     return await this.postRepo.unlike(args);
   }
 
-  async countLikesAndComments(postId?: number) {
-    return await this.postRepo.countLikesAndComments(postId);
+  async countLikesAndComments(
+    options: {
+      pageNumber: number;
+      pageSize: number;
+    },
+    postId?: number,
+  ) {
+    return await this.postRepo.countLikesAndComments({ ...options }, postId);
   }
 
   async createComment(args: Prisma.CommentUncheckedCreateInput) {

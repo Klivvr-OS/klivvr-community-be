@@ -43,14 +43,13 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const postObjects = await postService.findManyWithPagination(
-      {},
-      { pageNumber, pageSize },
-    );
-    if (!postObjects) {
+    const totalLikesComments = await postService.countLikesAndComments({
+      pageNumber,
+      pageSize,
+    });
+    if (!totalLikesComments) {
       throw new CustomError('Posts not found', 404);
     }
-    const totalLikesComments = await postService.countLikesAndComments();
     res.status(200).json({ posts: totalLikesComments });
   }),
 );
@@ -59,11 +58,19 @@ router.get(
   '/:id',
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
-    const postObject = await postService.findOne({ id });
-    if (!postObject) {
+    const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
+      req.query,
+    );
+    const post = await postService.countLikesAndComments(
+      {
+        pageNumber,
+        pageSize,
+      },
+      id,
+    );
+    if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const post = await postService.countLikesAndComments(id);
     res.status(200).json(post);
   }),
 );
