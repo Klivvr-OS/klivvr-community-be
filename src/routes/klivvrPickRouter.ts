@@ -68,7 +68,7 @@ router.get(
           description: true,
           link: true,
           category: true,
-          photoURL: true,
+          image: true,
         },
       },
     );
@@ -86,7 +86,7 @@ router.post(
   isNominated,
   endpoint(async (req, res) => {
     const userId = req.user?.id;
-    let photoURL;
+    let image;
     if (req.file) {
       const localFilePath = req.file.path;
       const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
@@ -95,11 +95,11 @@ router.post(
       if (!isSuccess) {
         throw new Error();
       }
-      photoURL = imageURL;
+      image = imageURL;
     }
     const validatedKlivvrPick = klivvrPickService.createKlivvrPickSchema.parse({
       ...req.body,
-      photoURL,
+      image,
     });
     const klivvrPickObject = await klivvrPickService.createOne({
       ...validatedKlivvrPick,
@@ -116,7 +116,7 @@ router.put(
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     await klivvrPickService.findOneWithError({ id, nomineeId: req.user?.id });
-    let photoURL;
+    let image;
     if (req.file) {
       const localFilePath = req.file.path;
       const { isSuccess, imageURL } = await cloudinaryInstance.uploadImage(
@@ -125,11 +125,11 @@ router.put(
       if (!isSuccess) {
         throw new Error();
       }
-      photoURL = imageURL;
+      image = imageURL;
     }
     const validatedKlivvrPick = klivvrPickService.updateKlivvrPickSchema.parse({
       ...req.body,
-      photoURL,
+      image,
     });
     const updatedKlivvrPickObject = await klivvrPickService.updateOne(
       { id },

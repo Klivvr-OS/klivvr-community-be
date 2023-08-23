@@ -33,7 +33,7 @@ router.get(
           description: true,
           link: true,
           category: true,
-          photoURL: true,
+          image: true,
         },
       },
     );
@@ -45,12 +45,10 @@ router.get(
           lastName: true,
           image: true,
           phone: true,
-          hobbies: true,
-          birthdate: true,
           email: true,
           interests: true,
-          preferredFoods: true,
-          favoriteClubs: true,
+          address: true,
+          aboutMe: true,
         },
       },
     );
