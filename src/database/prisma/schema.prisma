@@ -93,7 +93,7 @@ model KlivvrPick {
   description String
   link        String
   category    String
-  photoURL    String?
+  image       String?
   nominee     KlivvrPickNominee @relation(fields: [nomineeId], references: [nomineeId])
   nomineeId   Int
   createdAt   DateTime          @default(now())
