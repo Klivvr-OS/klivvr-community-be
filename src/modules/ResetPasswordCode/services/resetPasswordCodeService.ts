@@ -16,10 +16,10 @@ import { z } from 'zod';
 
 export class ResetPasswordCodeService {
   constructor(private readonly resetPasswordCodeRepo: ResetPasswordCodeRepo) {}
-  resetPasswordRequestSchema = z
+  readonly resetPasswordRequestSchema = z
     .object({ email: z.string().email().toLowerCase().trim() })
     .required();
-  resetPasswordSchema = z
+  readonly resetPasswordSchema = z
     .object({
       email: z.string().email().toLowerCase().trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),

@@ -23,7 +23,6 @@ export class Cloudinary {
       const { url } = cloudinaryImageUploadResponseData;
 
       if (!url) {
-        unlinkSync(imageToUpload);
         return {
           isSuccess: false,
           message:
@@ -32,7 +31,6 @@ export class Cloudinary {
         };
       }
 
-      unlinkSync(imageToUpload);
       return {
         isSuccess: true,
         message: 'Successfully uploaded image.',
@@ -40,12 +38,13 @@ export class Cloudinary {
         imageURL: url,
       };
     } catch (error) {
-      unlinkSync(imageToUpload);
       return {
         isSuccess: false,
         message: 'Internal Server Error',
         statusCode: 500,
       };
+    } finally {
+      unlinkSync(imageToUpload);
     }
   }
 }

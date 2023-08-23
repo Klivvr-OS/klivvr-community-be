@@ -21,7 +21,6 @@ export class UserRepo {
         firstName: true,
         lastName: true,
         image: true,
-        phone: true,
       },
     });
   }
@@ -46,6 +45,7 @@ export class UserRepo {
     SELECT 
       concat("firstName", ' ', "lastName") as "name",
       date_part('year', birthdate)||'-'||date_part('month', birthdate)||'-'||date_part('day', birthdate) as "birthdate",
+      "image",
       CASE
         WHEN 
           (DATE_PART('month', "birthdate") = DATE_PART('month', CURRENT_DATE)
@@ -78,7 +78,8 @@ export class UserRepo {
     SELECT
         concat("firstName", ' ', "lastName") as "name",
         date_part('year', age("hiringDate")) as "years",
-        date_part('year', "hiringDate")||'-'||date_part('month', "hiringDate")||'-'||date_part('day', "hiringDate") as "inKlivvrSince"
+        date_part('year', "hiringDate")||'-'||date_part('month', "hiringDate")||'-'||date_part('day', "hiringDate") as "inKlivvrSince",
+        "image"
       FROM
         "User"
       WHERE
