@@ -22,7 +22,7 @@ export class KlivvrPickRepo {
         description: true,
         link: true,
         category: true,
-        photoURL: true,
+        image: true,
       },
     });
   }
@@ -42,7 +42,7 @@ export class KlivvrPickRepo {
         "description",
         "link",
         "category",
-        "photoURL",
+        "image",
         date_part('year', "createdAt") || '-' || date_part('month', "createdAt") || '-' || date_part('day', "createdAt") AS "Klivvr Pick Date"
     FROM
         "KlivvrPick"
