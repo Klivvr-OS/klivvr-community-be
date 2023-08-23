@@ -9,13 +9,13 @@ import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 import { PasswordService } from '../../../helpers';
 
-const ACCESS_TOKEN_EXPIRY_TIME = '30s';
+const ACCESS_TOKEN_EXPIRY_TIME = '15m';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
 
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
 
-  createUserSchema = z
+  readonly createUserSchema = z
     .object({
       firstName: z
         .string()
@@ -32,7 +32,7 @@ export class UserService {
     })
     .required();
 
-  verifyUserSchema = z.object({
+  readonly verifyUserSchema = z.object({
     email: z.string().email({ message: 'Invalid email' }).toLowerCase().trim(),
     verificationCode: z
       .string()
@@ -40,12 +40,12 @@ export class UserService {
       .trim(),
   });
 
-  loginUserSchema = z.object({
+  readonly loginUserSchema = z.object({
     email: z.string().email().toLowerCase().trim(),
     password: z.string().trim(),
   });
 
-  validateUpdateUserSchema = z.object({
+  readonly validateUpdateUserSchema = z.object({
     firstName: z
       .string()
       .min(3, { message: 'First name is too short' })
@@ -60,14 +60,16 @@ export class UserService {
       .regex(/^01[0-2,5]{1}[0-9]{8}$/, { message: 'Invalid phone number' })
       .optional(),
     birthdate: z.coerce.date().optional(),
-    likes: z.array(z.string()).optional(),
+    interests: z.array(z.string()).optional(),
+    address: z.string().nonempty().optional(),
+    aboutMe: z.string().nonempty().optional(),
     favoriteClubs: z.array(z.string()).optional(),
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),
     hiringDate: z.coerce.date().optional(),
   });
 
-  resendVerificationCodeSchema = z.object({
+  readonly resendVerificationCodeSchema = z.object({
     email: z.string().email().toLowerCase().trim(),
   });
 
