@@ -170,7 +170,13 @@ export class UserService {
       },
     );
 
-    return { user, accessToken, refreshToken };
+    return {
+      user,
+      accessToken,
+      refreshToken,
+      ACCESS_TOKEN_EXPIRY_TIME,
+      REFRESH_TOKEN_EXPIRY_TIME,
+    };
   }
 
   async authenticateUser(token: string, secret: string) {
