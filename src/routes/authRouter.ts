@@ -81,10 +81,13 @@ router.post(
       httpOnly: true,
       maxAge: 7 * DAY,
     });
+
     res.status(200).json({
       message: 'User logged in successfully',
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
+      accessTokenExpiryDate: user.accessTokenExpiryDate,
+      refreshTokenExpiryDate: user.refreshTokenExpiryDate,
     });
   }),
 );
