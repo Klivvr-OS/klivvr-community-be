@@ -7,7 +7,7 @@ import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
-import { PasswordService } from '../../../helpers';
+import { PasswordService, expiryDate } from '../../../helpers';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '15m';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -170,12 +170,20 @@ export class UserService {
       },
     );
 
+    const now = new Date();
+    const accessTokenExpiryDate = new Date(
+      now.getTime() + expiryDate(ACCESS_TOKEN_EXPIRY_TIME),
+    );
+    const refreshTokenExpiryDate = new Date(
+      now.getTime() + expiryDate(REFRESH_TOKEN_EXPIRY_TIME),
+    );
+
     return {
       user,
       accessToken,
       refreshToken,
-      ACCESS_TOKEN_EXPIRY_TIME,
-      REFRESH_TOKEN_EXPIRY_TIME,
+      accessTokenExpiryDate,
+      refreshTokenExpiryDate,
     };
   }
 

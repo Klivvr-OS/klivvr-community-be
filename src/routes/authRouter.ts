@@ -5,7 +5,6 @@ import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
 import { secretAccessKey, secretRefreshKey } from '../config';
-import { expiryDate } from '../helpers';
 
 const DAY = 24 * 60 * 60 * 1000; // 1 Day
 
@@ -83,20 +82,12 @@ router.post(
       maxAge: 7 * DAY,
     });
 
-    const now = new Date();
-    const accessTokenExpiryDate = new Date(
-      now.getTime() + expiryDate(user.ACCESS_TOKEN_EXPIRY_TIME),
-    );
-    const refreshTokenExpiryDate = new Date(
-      now.getTime() + expiryDate(user.REFRESH_TOKEN_EXPIRY_TIME),
-    );
-
     res.status(200).json({
       message: 'User logged in successfully',
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
-      accessTokenExpiryDate,
-      refreshTokenExpiryDate,
+      accessTokenExpiryDate: user.accessTokenExpiryDate,
+      refreshTokenExpiryDate: user.refreshTokenExpiryDate,
     });
   }),
 );
