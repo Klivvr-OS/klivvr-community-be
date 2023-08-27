@@ -63,6 +63,7 @@ export class UserService {
     interests: z.array(z.string()).optional(),
     address: z.string().nonempty().optional(),
     aboutMe: z.string().nonempty().optional(),
+    title: z.string().nonempty().optional(),
     favoriteClubs: z.array(z.string()).optional(),
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),
@@ -222,7 +223,12 @@ export class UserService {
       });
     }
 
-    return accessToken;
+    const now = new Date();
+    const accessTokenExpiryDate = new Date(
+      now.getTime() + expiryDate(ACCESS_TOKEN_EXPIRY_TIME),
+    );
+
+    return { accessToken, accessTokenExpiryDate };
   }
 
   async findUsersBirthday(options: { pageNumber: number; pageSize: number }) {

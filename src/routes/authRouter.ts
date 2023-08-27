@@ -6,8 +6,6 @@ import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
 import { secretAccessKey, secretRefreshKey } from '../config';
 
-const DAY = 24 * 60 * 60 * 1000; // 1 Day
-
 const router = express.Router();
 
 router.post(
@@ -73,14 +71,6 @@ router.post(
       return;
     }
     const user = await userService.login({ email, password });
-    res.cookie('accessToken', user.accessToken, {
-      httpOnly: true,
-      maxAge: DAY,
-    });
-    res.cookie('refreshToken', user.refreshToken, {
-      httpOnly: true,
-      maxAge: 7 * DAY,
-    });
 
     res.status(200).json({
       message: 'User logged in successfully',
@@ -95,7 +85,7 @@ router.post(
 router.get(
   '/authenticated',
   endpoint(async (req, res) => {
-    const { accessToken } = req.cookies as { accessToken: string };
+    const accessToken = req.headers.authorization?.split(' ')[1] as string;
     await userService.authenticateUser(accessToken, secretAccessKey);
     res.status(200).json({ message: 'User authenticated successfully' });
   }),
@@ -104,25 +94,17 @@ router.get(
 router.post(
   '/refresh',
   endpoint((req, res) => {
-    const { refreshToken } = req.cookies as { refreshToken: string };
-    const accessToken = userService.verifyRefreshToken(
+    const refreshToken = req.headers.authorization?.split(' ')[1] as string;
+    const token = userService.verifyRefreshToken(
       refreshToken,
       secretRefreshKey,
     );
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      maxAge: DAY,
-    });
-    res.status(200).json({ message: 'Token refreshed successfully' });
-  }),
-);
 
-router.post(
-  '/logout',
-  endpoint((req, res) => {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
-    res.status(200).json({ message: 'User logged out successfully' });
+    res.status(200).json({
+      message: 'Token refreshed successfully',
+      accessToken: token.accessToken,
+      accessTokenExpiryDate: token.accessTokenExpiryDate,
+    });
   }),
 );
 

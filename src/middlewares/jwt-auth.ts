@@ -11,7 +11,8 @@ export const isAuth = async (
   next: NextFunction,
 ) => {
   try {
-    const { accessToken } = req.cookies as { accessToken: string };
+    const accessToken = req.headers.authorization?.split(' ')[1];
+    if (!accessToken) throw new CustomError('Unauthorized', 401);
     const user = await userService.authenticateUser(
       accessToken,
       secretAccessKey,
