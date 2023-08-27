@@ -21,6 +21,7 @@ export class UserRepo {
         firstName: true,
         lastName: true,
         image: true,
+        title: true,
       },
     });
   }
