@@ -24,6 +24,7 @@ model User {
   hobbies           String[]            @default([])
   address           String?
   aboutMe           String?
+  title             String?
   hiringDate        DateTime?
   Role              Role                @default(USER)
   verificationCode  String?
