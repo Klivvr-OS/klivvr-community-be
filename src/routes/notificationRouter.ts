@@ -21,12 +21,12 @@ router.post(
 );
 
 router.get(
-  '/:id',
+  '/',
   endpoint(async (req, res) => {
-    const userId = Number(req.params.id);
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
+    const userId = req.user?.id;
     const notifications = await notificationService.findMany(
       {
         userId,
