@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { NotificationRepo, notificationRepo } from '../repos/notificationRepo';
 import { z } from 'zod';
-import { sendNotificationService } from '../../PushNotification';
+import { pushNotificationService } from '../../PushNotification';
 import { deviceTokenService } from '../../DeviceToken';
 
 export class NotificationService {
@@ -21,7 +21,7 @@ export class NotificationService {
     if (deviceToken?.token) {
       return await Promise.all([
         this.notificationRepo.createOne(args),
-        sendNotificationService.sendNotification({
+        pushNotificationService.send({
           deviceToken: deviceToken?.token,
           title: args.title,
           description: args.description,

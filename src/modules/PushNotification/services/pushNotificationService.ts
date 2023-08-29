@@ -1,10 +1,11 @@
 import admin from 'firebase-admin';
 import { firebasePrivateKey } from '../../../config';
 
-export class SendNotification {
+export class PushNotificationService {
   private intialized: boolean;
   constructor() {
     this.intialized = false;
+    this.initializeApp();
   }
   private initializeApp() {
     if (!this.intialized) {
@@ -14,13 +15,12 @@ export class SendNotification {
       this.intialized = true;
     }
   }
-  async sendNotification(args: {
+  async send(args: {
     deviceToken: string;
     title: string;
     description: string;
   }) {
     try {
-      this.initializeApp();
       const { deviceToken, title, description } = args;
       const message = {
         notification: {
@@ -36,4 +36,4 @@ export class SendNotification {
   }
 }
 
-export const sendNotificationService = new SendNotification();
+export const pushNotificationService = new PushNotificationService();
