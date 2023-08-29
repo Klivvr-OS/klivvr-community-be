@@ -5,6 +5,7 @@ import { requestQueryPaginationSchema } from '../helpers';
 
 const router = express.Router();
 
+//todo: don't miss to delete this route, it's just for testing
 router.post(
   '/',
   endpoint(async (req, res) => {

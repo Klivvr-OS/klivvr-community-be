@@ -1,6 +1,8 @@
 import { Prisma } from '@prisma/client';
 import { NotificationRepo, notificationRepo } from '../repos/notificationRepo';
 import { z } from 'zod';
+import { sendNotificationService } from '../../PushNotification';
+import { deviceTokenService } from '../../DeviceToken';
 
 export class NotificationService {
   constructor(private readonly notificationRepo: NotificationRepo) {}
@@ -13,7 +15,19 @@ export class NotificationService {
     .required();
 
   async createOne(args: Prisma.NotificationUncheckedCreateInput) {
-    return await this.notificationRepo.createOne(args);
+    const deviceToken = await deviceTokenService.findOne({
+      userId: args.userId,
+    });
+    if (deviceToken?.token) {
+      return await Promise.all([
+        this.notificationRepo.createOne(args),
+        sendNotificationService.sendNotification({
+          deviceToken: deviceToken?.token,
+          title: args.title,
+          description: args.description,
+        }),
+      ]);
+    }
   }
 
   async findMany(
