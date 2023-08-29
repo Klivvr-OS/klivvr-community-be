@@ -20,19 +20,15 @@ export class PushNotificationService {
     title: string;
     description: string;
   }) {
-    try {
-      const { deviceToken, title, description } = args;
-      const message = {
-        notification: {
-          title,
-          body: description,
-        },
-        token: deviceToken,
-      };
-      await admin.messaging().send(message);
-    } catch (err) {
-      throw new Error();
-    }
+    const { deviceToken, title, description } = args;
+    const message = {
+      notification: {
+        title,
+        body: description,
+      },
+      token: deviceToken,
+    };
+    await admin.messaging().send(message);
   }
 }
 
