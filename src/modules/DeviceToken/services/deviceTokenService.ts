@@ -26,6 +26,13 @@ export class DeviceTokenService {
   ) {
     return await this.deviceTokenRepo.updateOne(query, args);
   }
+
+  async upsertOne(
+    query: Prisma.DeviceTokenWhereUniqueInput,
+    args: Prisma.DeviceTokenUncheckedCreateInput,
+  ) {
+    return await this.deviceTokenRepo.upsertOne(query, args);
+  }
 }
 
 export const deviceTokenService = new DeviceTokenService(deviceTokenRepo);

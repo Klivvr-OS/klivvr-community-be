@@ -18,6 +18,17 @@ export class DeviceTokenRepo {
   ) {
     return await this.client.deviceToken.update({ where: query, data: args });
   }
+
+  async upsertOne(
+    query: Prisma.DeviceTokenWhereUniqueInput,
+    args: Prisma.DeviceTokenUncheckedCreateInput,
+  ) {
+    return await this.client.deviceToken.upsert({
+      where: query,
+      create: args,
+      update: args,
+    });
+  }
 }
 
 export const deviceTokenRepo = new DeviceTokenRepo(prisma);

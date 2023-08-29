@@ -11,35 +11,11 @@ router.post(
       req.body,
     );
     const userId = req.user?.id;
-    const existingUserDeviceToken = await deviceTokenService.findOne({
-      userId: userId as number,
-    });
-    if (existingUserDeviceToken) {
-      await deviceTokenService.updateOne(
-        {
-          userId: userId as number,
-        },
-        {
-          token: deviceToken.token,
-          deviceType: deviceToken.deviceType,
-        },
-      );
-    }
-    const existingDeviceToken = await deviceTokenService.findOne({
-      token: deviceToken.token,
-    });
-    if (existingDeviceToken) {
-      await deviceTokenService.updateOne(
-        { id: existingDeviceToken.id },
-        { userId: userId as number },
-      );
-      res.status(200).json({ message: 'Device token updated successfully' });
-    }
-    await deviceTokenService.createOne({
-      ...deviceToken,
-      userId: userId as number,
-    });
-    res.status(201).json({ message: 'Device token created successfully' });
+    await deviceTokenService.upsertOne(
+      { userId: userId as number },
+      { ...deviceToken, userId: userId as number },
+    );
+    res.status(200).json({ message: 'Device token updated successfully' });
   }),
 );
 
