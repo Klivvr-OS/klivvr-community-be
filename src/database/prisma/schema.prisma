@@ -121,8 +121,8 @@ model Event {
   eventType EventType
   image     String?
   date      DateTime
-  startTime DateTime
-  endTime   DateTime
+  startTime DateTime?
+  endTime   DateTime?
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
 }
