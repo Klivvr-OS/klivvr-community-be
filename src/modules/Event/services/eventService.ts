@@ -57,11 +57,11 @@ export class EventService {
     return await this.eventRepo.findEvents(options);
   }
 
-  async findEventByUser(
+  async findManyByUserId(
     query: { userId: number },
     options?: { select: Prisma.EventSelect },
   ) {
-    return await this.eventRepo.findEventByUser(query, options);
+    return await this.eventRepo.findManyByUserId(query, options);
   }
 
   async updateOne(

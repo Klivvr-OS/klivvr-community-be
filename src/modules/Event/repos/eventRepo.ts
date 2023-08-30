@@ -29,7 +29,7 @@ export class EventRepo {
   async findEvents(options: { pageNumber: number; pageSize: number }) {
     const { skip, take } = paginate(options);
 
-    const Birthdays = await this.client.$queryRaw`
+    const birthdays = await this.client.$queryRaw`
         SELECT 
             concat("firstName", ' ', "lastName") as "name",
             date_part('year', birthdate)||'-'||date_part('month', birthdate)||'-'||date_part('day', birthdate) as "birthdate",
@@ -57,7 +57,7 @@ export class EventRepo {
             ${skip}
     `;
 
-    const Anniversaries = await this.client.$queryRaw`
+    const anniversaries = await this.client.$queryRaw`
         SELECT
             concat("firstName", ' ', "lastName") as "name",
             date_part('year', age("hiringDate")) as "years",
@@ -90,7 +90,7 @@ export class EventRepo {
             ${skip}
     `;
 
-    const Events = await this.client.$queryRaw`
+    const events = await this.client.$queryRaw`
         SELECT
             "name",
             "image",
@@ -121,13 +121,13 @@ export class EventRepo {
     `;
 
     return {
-      Birthdays,
-      Anniversaries,
-      Events,
+      birthdays,
+      anniversaries,
+      events,
     };
   }
 
-  async findEventByUser(
+  async findManyByUserId(
     query: { userId: number },
     options?: { select: Prisma.EventSelect },
   ) {
