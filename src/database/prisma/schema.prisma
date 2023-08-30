@@ -41,7 +41,6 @@ model User {
   events            Event[]
   Notification      Notification[]
   DeviceToken       DeviceToken?
-  events            Event[]
 }
 
 enum Role {
