@@ -17,7 +17,7 @@ model User {
   firstName         String
   lastName          String
   phone             String?             @unique
-  birthdate         DateTime?
+  birthdate         DateTime
   interests         String[]            @default([])
   favoriteClubs     String[]            @default([])
   preferredFoods    String[]            @default([])
@@ -25,7 +25,7 @@ model User {
   address           String?
   aboutMe           String?
   title             String?
-  hiringDate        DateTime?
+  hiringDate        DateTime
   Role              Role                @default(USER)
   verificationCode  String?
   isVerified        Boolean             @default(false)
@@ -41,6 +41,7 @@ model User {
   events            Event[]
   Notification      Notification[]
   DeviceToken       DeviceToken?
+  events            Event[]
 }
 
 enum Role {
@@ -158,4 +159,22 @@ model DeviceToken {
 enum DeviceTokenType {
   ANDROID
   IOS
+}
+model Event {
+  id        Int      @id @default(autoincrement())
+  name      String
+  eventType EventType
+  image     String?
+  date      DateTime
+  startTime DateTime?
+  endTime   DateTime?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+enum EventType {
+  BIRTHDAY
+  ANNIVERSARY
+  WEDDING
+  FAREWELL
 }

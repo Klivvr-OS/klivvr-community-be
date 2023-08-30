@@ -8,6 +8,7 @@ import { secretAccessKey, secretRefreshKey } from '../../../config';
 import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 import { PasswordService, expiryDate } from '../../../helpers';
+import { eventService } from '../../Event';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '15m';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -29,6 +30,8 @@ export class UserService {
         .trim(),
       password: z.string().min(6, { message: 'Password is too short' }).trim(),
       image: z.string(),
+      birthdate: z.coerce.date(),
+      hiringDate: z.coerce.date(),
     })
     .required();
 
@@ -88,6 +91,20 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
+    const createBirthdayEvent = await eventService.createOne({
+      name: createdUser.firstName + ' ' + createdUser.lastName + ' Birthday',
+      date: createdUser.birthdate,
+      eventType: 'BIRTHDAY',
+      userId: createdUser.id,
+      image: createdUser.image,
+    });
+    const createAnniversaryEvent = await eventService.createOne({
+      name: createdUser.firstName + ' ' + createdUser.lastName + ' Anniversary',
+      date: createdUser.hiringDate,
+      eventType: 'ANNIVERSARY',
+      userId: createdUser.id,
+      image: createdUser.image,
+    });
     await sendingEmails(
       {
         to: args.email,
@@ -100,7 +117,7 @@ export class UserService {
     if (createdUser == null) {
       throw new CustomError('Internal Server Error', 500);
     }
-    return createdUser;
+    return { createdUser, createBirthdayEvent, createAnniversaryEvent };
   }
 
   async findManyWithPagination(
