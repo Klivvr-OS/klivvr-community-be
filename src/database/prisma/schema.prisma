@@ -39,6 +39,8 @@ model User {
   nominatorUser     KlivvrPickNominee[] @relation("Nominator")
   Like              Like[]
   events            Event[]
+  Notification      Notification[]
+  DeviceToken       DeviceToken?
 }
 
 enum Role {
@@ -113,6 +115,7 @@ model KlivvrPickNominee {
   KlivvrPick  KlivvrPick[]
 }
 
+
 model Event {
   id        Int      @id @default(autoincrement())
   name      String
@@ -130,4 +133,28 @@ enum EventType {
   ANNIVERSARY
   WEDDING
   FAREWELL
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DeviceToken {
+  id         Int             @id @default(autoincrement())
+  token      String          @unique
+  deviceType DeviceTokenType
+  user       User            @relation(fields: [userId], references: [id])
+  userId     Int             @unique
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+enum DeviceTokenType {
+  ANDROID
+  IOS
 }
