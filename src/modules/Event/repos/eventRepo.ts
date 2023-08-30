@@ -36,15 +36,15 @@ export class EventRepo {
             "endTime",
             "image",
             "eventType",
-            Date_part('year', current_date) || '-' || Date_part('month', "date") || '-' || Date_part('day', "date") AS "date"
+            DATE_PART('year', current_date) || '-' || DATE_PART('month', "date") || '-' || DATE_PART('day', "date") AS "date"
         FROM
             "Event" 
         WHERE
-            date_part('month', "date") = date_part('month', current_date)
+            DATE_PART('month', "date") = DATE_PART('month', current_date)
             AND
-            date_part('day', "date") = date_part('day', current_date)
+            DATE_PART('day', "date") = DATE_PART('day', current_date)
             OR 
-            date(date_part('year', current_date)||'-'||date_part('month', "date")||'-'||date_part('day', "date")) BETWEEN current_date AND current_date + interval '7 days'
+            date(DATE_PART('year', current_date)||'-'||DATE_PART('month', "date")||'-'||DATE_PART('day', "date")) BETWEEN current_date AND current_date + interval '7 days'
         LIMIT
             ${take}
         OFFSET
