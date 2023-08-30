@@ -10,7 +10,9 @@ export class PushNotificationService {
   private initializeApp() {
     if (!this.intialized) {
       admin.initializeApp({
-        credential: admin.credential.cert(firebasePrivateKey),
+        credential: admin.credential.cert(
+          JSON.parse(firebasePrivateKey) as admin.ServiceAccount,
+        ),
       });
       this.intialized = true;
     }
