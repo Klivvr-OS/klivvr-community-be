@@ -84,8 +84,8 @@ router.delete(
   endpoint(async (req, res) => {
     const id = Number(req.params.id);
     await eventService.findOneWithError({ id, userId: req.user?.id });
-    const deletedKlivvrPickObject = await eventService.deleteOne({ id });
-    res.status(200).json(deletedKlivvrPickObject);
+    const deletedEvent = await eventService.deleteOne({ id });
+    res.status(200).json(deletedEvent);
   }),
 );
 
