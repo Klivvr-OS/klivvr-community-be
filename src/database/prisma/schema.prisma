@@ -116,7 +116,6 @@ model KlivvrPickNominee {
   KlivvrPick  KlivvrPick[]
 }
 
-
 model Event {
   id        Int      @id @default(autoincrement())
   name      String
@@ -159,22 +158,4 @@ model DeviceToken {
 enum DeviceTokenType {
   ANDROID
   IOS
-}
-model Event {
-  id        Int      @id @default(autoincrement())
-  name      String
-  eventType EventType
-  image     String?
-  date      DateTime
-  startTime DateTime?
-  endTime   DateTime?
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-}
-
-enum EventType {
-  BIRTHDAY
-  ANNIVERSARY
-  WEDDING
-  FAREWELL
 }

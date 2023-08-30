@@ -23,6 +23,8 @@ router.get(
           aboutMe: true,
           interests: true,
           title: true,
+          birthdate: true,
+          hiringDate: true,
         },
       },
     );
