@@ -18,6 +18,7 @@ export class KlivvrPickRepo {
       ...paginate(options),
       orderBy: { createdAt: 'desc' },
       select: {
+        id: true,
         name: true,
         description: true,
         link: true,

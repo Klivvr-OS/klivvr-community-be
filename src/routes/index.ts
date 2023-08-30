@@ -12,7 +12,7 @@ const router = express.Router();
 router.use('/auth', authRouter);
 router.use(isAuth);
 router.use('/posts', postRouter);
-router.use('/profile', profileRouter);
+router.use('/profile/me', profileRouter);
 router.use('/events', eventRouter);
 router.use('/klivvr-picks', klivvrPickRouter);
 router.use('/users', userRouter);
