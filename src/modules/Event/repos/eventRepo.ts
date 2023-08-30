@@ -28,7 +28,6 @@ export class EventRepo {
 
   async findEvents(options: { pageNumber: number; pageSize: number }) {
     const { skip, take } = paginate(options);
-
     return await this.client.$queryRaw`
         SELECT
             "id",
@@ -53,7 +52,7 @@ export class EventRepo {
     `;
   }
 
-  async findEventByUser(
+  async findManyByUserId(
     query: { userId: number },
     options?: { select: Prisma.EventSelect },
   ) {
