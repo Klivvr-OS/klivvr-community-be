@@ -231,17 +231,6 @@ export class UserService {
     return { accessToken, accessTokenExpiryDate };
   }
 
-  async findUsersBirthday(options: { pageNumber: number; pageSize: number }) {
-    return await this.userRepo.findUsersBirthday(options);
-  }
-
-  async findUsersAnniversary(options: {
-    pageNumber: number;
-    pageSize: number;
-  }) {
-    return await this.userRepo.findUsersAnniversaries(options);
-  }
-
   async resendVerificationCode(args: { email: string }) {
     const user = await this.userRepo.findOne({ email: args.email });
     if (!user) {
