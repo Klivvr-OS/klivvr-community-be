@@ -9,13 +9,8 @@ export class EventService {
   readonly createEventSchema = z.object({
     name: z.string().trim().nonempty(),
     date: z.coerce.date(),
-<<<<<<< HEAD
-    startTime: z.coerce.date(),
-    endTime: z.coerce.date(),
-=======
     startTime: z.coerce.date().optional(),
     endTime: z.coerce.date().optional(),
->>>>>>> e88e59c (Changes)
     image: z.string().optional(),
     eventType: z.enum(['BIRTHDAY', 'ANNIVERSARY', 'WEDDING', 'FAREWELL']),
   });
