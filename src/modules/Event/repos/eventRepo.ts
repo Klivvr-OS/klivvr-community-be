@@ -29,105 +29,31 @@ export class EventRepo {
   async findEvents(options: { pageNumber: number; pageSize: number }) {
     const { skip, take } = paginate(options);
 
-    const birthdays = await this.client.$queryRaw`
-        SELECT 
-            concat("firstName", ' ', "lastName") as "name",
-            date_part('year', birthdate)||'-'||date_part('month', birthdate)||'-'||date_part('day', birthdate) as "birthdate",
-            "image",
-            CASE
-                WHEN 
-                    (DATE_PART('month', "birthdate") = DATE_PART('month', CURRENT_DATE)
-                    AND
-                    DATE_PART('day', "birthdate") = DATE_PART('day', CURRENT_DATE))
-                THEN
-                    true
-                ELSE 
-                    false
-            END AS isToday,
-          'BIRTHDAY' as "eventType"
-        FROM 
-            "User" 
-        WHERE 
-            date(date_part('year', current_date)||'-'||date_part('month', birthdate)||'-'||date_part('day', birthdate)) BETWEEN current_date AND current_date + interval '7 days'
-        Order by 
-            "birthdate" DESC
-        LIMIT
-            ${take}
-        OFFSET
-            ${skip}
-    `;
-
-    const anniversaries = await this.client.$queryRaw`
+    return await this.client.$queryRaw`
         SELECT
-            concat("firstName", ' ', "lastName") as "name",
-            date_part('year', age("hiringDate")) as "years",
-            date_part('year', "hiringDate")||'-'||date_part('month', "hiringDate")||'-'||date_part('day', "hiringDate") as "inKlivvrSince",
-            "image",
-            CASE
-                WHEN 
-                    (DATE_PART('month', "hiringDate") = DATE_PART('month', CURRENT_DATE)
-                    AND
-                    DATE_PART('day', "hiringDate") = DATE_PART('day', CURRENT_DATE))
-                THEN
-                    true
-                ELSE 
-                    false
-            END AS isToday,
-            'ANNIVERSARY' as "eventType"
-        FROM
-            "User"
-        WHERE
-            date_part('month', "hiringDate") = date_part('month', current_date)
-            AND
-            date_part('day', "hiringDate") = date_part('day', current_date)
-            OR 
-            date(date_part('year', current_date)||'-'||date_part('month', "hiringDate")||'-'||date_part('day', "hiringDate")) BETWEEN current_date AND current_date + interval '7 days'
-        Order by
-            "inKlivvrSince" DESC
-        LIMIT
-            ${take}
-        OFFSET
-            ${skip}
-    `;
-
-    const events = await this.client.$queryRaw`
-        SELECT
+            "id",
             "name",
-            "image",
             "startTime",
             "endTime",
-            "date",
+            "image",
             "eventType",
-            CASE
-                WHEN 
-                    (DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
-                    AND
-                    DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE))
-                THEN
-                    true
-                ELSE 
-                    false
-            END AS isEventToday
+            Date_part('year', current_date) || '-' || Date_part('month', "date") || '-' || Date_part('day', "date") AS "date"
         FROM
-            "Event"
+            "Event" 
         WHERE
+            date_part('month', "date") = date_part('month', current_date)
+            AND
+            date_part('day', "date") = date_part('day', current_date)
+            OR 
             date(date_part('year', current_date)||'-'||date_part('month', "date")||'-'||date_part('day', "date")) BETWEEN current_date AND current_date + interval '7 days'
-        ORDER BY
-            "startTime" ASC
-        LIMIT 
-            ${take} 
-        OFFSET 
+        LIMIT
+            ${take}
+        OFFSET
             ${skip}
     `;
-
-    return {
-      birthdays,
-      anniversaries,
-      events,
-    };
   }
 
-  async findManyByUserId(
+  async findEventByUser(
     query: { userId: number },
     options?: { select: Prisma.EventSelect },
   ) {
