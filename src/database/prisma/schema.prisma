@@ -133,6 +133,7 @@ enum EventType {
   ANNIVERSARY
   WEDDING
   FAREWELL
+}
 
 model Notification {
   id          Int      @id @default(autoincrement())
