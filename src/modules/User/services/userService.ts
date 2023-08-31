@@ -16,24 +16,19 @@ const REFRESH_TOKEN_EXPIRY_TIME = '1w';
 export class UserService {
   constructor(private readonly userRepo: UserRepo) {}
 
-  readonly createUserSchema = z
-    .object({
-      firstName: z
-        .string()
-        .min(3, { message: 'First name is too short' })
-        .trim(),
-      lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
-      email: z
-        .string()
-        .email({ message: 'Invalid email' }) //todo add endWith/regex for klivvr emails
-        .toLowerCase()
-        .trim(),
-      password: z.string().min(6, { message: 'Password is too short' }).trim(),
-      image: z.string(),
-      birthdate: z.coerce.date(),
-      hiringDate: z.coerce.date(),
-    })
-    .required();
+  readonly createUserSchema = z.object({
+    firstName: z.string().min(3, { message: 'First name is too short' }).trim(),
+    lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
+    email: z
+      .string()
+      .email({ message: 'Invalid email' }) //todo add endWith/regex for klivvr emails
+      .toLowerCase()
+      .trim(),
+    password: z.string().min(6, { message: 'Password is too short' }).trim(),
+    image: z.string(),
+    birthdate: z.coerce.date().optional(),
+    hiringDate: z.coerce.date().optional(),
+  });
 
   readonly verifyUserSchema = z.object({
     email: z.string().email({ message: 'Invalid email' }).toLowerCase().trim(),
@@ -91,20 +86,27 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
-    const createBirthdayEvent = await eventService.createOne({
-      name: createdUser.firstName + ' ' + createdUser.lastName + ' Birthday',
-      date: createdUser.birthdate,
-      eventType: 'BIRTHDAY',
-      userId: createdUser.id,
-      image: createdUser.image,
-    });
-    const createAnniversaryEvent = await eventService.createOne({
-      name: createdUser.firstName + ' ' + createdUser.lastName + ' Anniversary',
-      date: createdUser.hiringDate,
-      eventType: 'ANNIVERSARY',
-      userId: createdUser.id,
-      image: createdUser.image,
-    });
+    let createBirthdayEvent;
+    let createAnniversaryEvent;
+    if (createdUser.birthdate) {
+      createBirthdayEvent = await eventService.createOne({
+        name: createdUser.firstName + ' ' + createdUser.lastName + ' Birthday',
+        date: createdUser.birthdate,
+        eventType: 'BIRTHDAY',
+        userId: createdUser.id,
+        image: createdUser.image,
+      });
+    }
+    if (createdUser.hiringDate) {
+      createAnniversaryEvent = await eventService.createOne({
+        name:
+          createdUser.firstName + ' ' + createdUser.lastName + ' Anniversary',
+        date: createdUser.hiringDate,
+        eventType: 'ANNIVERSARY',
+        userId: createdUser.id,
+        image: createdUser.image,
+      });
+    }
     await sendingEmails(
       {
         to: args.email,
@@ -138,7 +140,38 @@ export class UserService {
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
   ) {
-    return await this.userRepo.updateOne(query, args);
+    let createBirthdayEvent;
+    let createAnniversaryEvent;
+    const updatedUser = await this.userRepo.updateOne(query, args);
+    const event = await eventService.findManyByUserId({
+      userId: updatedUser.id,
+    });
+    const userPreviousBirthdayEvent = event.find(
+      (e) => e.eventType === 'BIRTHDAY',
+    );
+    const userPreviousAnniversaryEvent = event.find(
+      (e) => e.eventType === 'ANNIVERSARY',
+    );
+    if (updatedUser?.birthdate && !userPreviousBirthdayEvent) {
+      createBirthdayEvent = await eventService.createOne({
+        name: updatedUser.firstName + ' ' + updatedUser.lastName + ' Birthday',
+        date: updatedUser.birthdate,
+        eventType: 'BIRTHDAY',
+        userId: updatedUser.id,
+        image: updatedUser.image,
+      });
+    }
+    if (updatedUser?.hiringDate && !userPreviousAnniversaryEvent) {
+      createAnniversaryEvent = await eventService.createOne({
+        name:
+          updatedUser.firstName + ' ' + updatedUser.lastName + ' Anniversary',
+        date: updatedUser.hiringDate,
+        eventType: 'ANNIVERSARY',
+        userId: updatedUser.id,
+        image: updatedUser.image,
+      });
+    }
+    return { updatedUser, createBirthdayEvent, createAnniversaryEvent };
   }
 
   async checkVerificationCode(args: Prisma.UserWhereInput) {

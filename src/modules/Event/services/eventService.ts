@@ -53,8 +53,8 @@ export class EventService {
     return event;
   }
 
-  async findEvents(options: { pageNumber: number; pageSize: number }) {
-    return await this.eventRepo.findEvents(options);
+  async findThisWeekEvents(options: { pageNumber: number; pageSize: number }) {
+    return await this.eventRepo.findThisWeekEvents(options);
   }
 
   async findManyByUserId(

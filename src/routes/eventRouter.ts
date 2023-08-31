@@ -44,7 +44,10 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const events = await eventService.findEvents({ pageNumber, pageSize });
+    const events = await eventService.findThisWeekEvents({
+      pageNumber,
+      pageSize,
+    });
     res.status(200).json(events);
   }),
 );

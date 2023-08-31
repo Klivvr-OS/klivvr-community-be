@@ -17,7 +17,7 @@ model User {
   firstName         String
   lastName          String
   phone             String?             @unique
-  birthdate         DateTime
+  birthdate         DateTime?
   interests         String[]            @default([])
   favoriteClubs     String[]            @default([])
   preferredFoods    String[]            @default([])
@@ -25,7 +25,7 @@ model User {
   address           String?
   aboutMe           String?
   title             String?
-  hiringDate        DateTime
+  hiringDate        DateTime?
   Role              Role                @default(USER)
   verificationCode  String?
   isVerified        Boolean             @default(false)

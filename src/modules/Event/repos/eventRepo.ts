@@ -26,7 +26,7 @@ export class EventRepo {
     return await this.client.event.findFirst({ where: query, ...options });
   }
 
-  async findEvents(options: { pageNumber: number; pageSize: number }) {
+  async findThisWeekEvents(options: { pageNumber: number; pageSize: number }) {
     const { skip, take } = paginate(options);
     return await this.client.$queryRaw`
         SELECT
