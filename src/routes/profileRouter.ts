@@ -6,8 +6,34 @@ import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 
 const router = express.Router();
 
+router.get(
+  '/',
+  endpoint(async (req, res) => {
+    const userId = req.user?.id;
+    const user = await userService.findOne(
+      { id: userId },
+      {
+        select: {
+          firstName: true,
+          lastName: true,
+          image: true,
+          email: true,
+          phone: true,
+          address: true,
+          aboutMe: true,
+          interests: true,
+          title: true,
+          birthdate: true,
+          hiringDate: true,
+        },
+      },
+    );
+    res.status(200).json({ user: user });
+  }),
+);
+
 router.put(
-  '/me',
+  '/',
   multerUpload.single('image'),
   handleMulterError,
   endpoint(async (req, res) => {

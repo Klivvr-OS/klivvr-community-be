@@ -18,6 +18,7 @@ export class KlivvrPickRepo {
       ...paginate(options),
       orderBy: { createdAt: 'desc' },
       select: {
+        id: true,
         name: true,
         description: true,
         link: true,
@@ -38,16 +39,19 @@ export class KlivvrPickRepo {
     const { skip, take } = paginate(options);
     return await this.client.$queryRaw`
     SELECT
-        "name",
-        "description",
-        "link",
-        "category",
-        "image",
-        date_part('year', "createdAt") || '-' || date_part('month', "createdAt") || '-' || date_part('day', "createdAt") AS "Klivvr Pick Date"
+        kp."id",
+        kp."name",
+        kp."description",
+        kp."link",
+        kp."category",
+        kp."image" as "klivvrPickImage",
+        u."firstName" || ' ' || u."lastName" as "nominee",
+        u."image" as "nomineeImage",
+        date_part('year', kp."createdAt") || '-' || date_part('month', kp."createdAt") || '-' || date_part('day', kp."createdAt") AS "Klivvr Pick Date"
     FROM
-        "KlivvrPick"
+        "KlivvrPick" kp inner join "User" u on kp."nomineeId" = u.id
     WHERE
-        "createdAt" BETWEEN 
+        kp."createdAt" BETWEEN 
             CASE 
                 WHEN EXTRACT(DOW FROM current_date)::integer = 4 THEN current_date 
                 ELSE current_date - (EXTRACT(DOW FROM current_date)::integer + 3) % 7 

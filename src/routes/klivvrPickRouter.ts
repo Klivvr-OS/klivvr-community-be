@@ -69,6 +69,17 @@ router.get(
           link: true,
           category: true,
           image: true,
+          nominee: {
+            select: {
+              nominee: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  image: true,
+                },
+              },
+            },
+          },
         },
       },
     );

@@ -38,6 +38,7 @@ model User {
   nominatedUser     KlivvrPickNominee[] @relation("Nominee")
   nominatorUser     KlivvrPickNominee[] @relation("Nominator")
   Like              Like[]
+  events            Event[]
   Notification      Notification[]
   DeviceToken       DeviceToken?
 }
@@ -112,6 +113,25 @@ model KlivvrPickNominee {
   nominator   User         @relation("Nominator", fields: [nominatorId], references: [id])
   nominatorId Int
   KlivvrPick  KlivvrPick[]
+}
+
+model Event {
+  id        Int      @id @default(autoincrement())
+  name      String
+  eventType EventType
+  image     String?
+  date      DateTime
+  startTime DateTime?
+  endTime   DateTime?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+}
+
+enum EventType {
+  BIRTHDAY
+  ANNIVERSARY
+  WEDDING
+  FAREWELL
 }
 
 model Notification {
