@@ -1,36 +1,46 @@
-import admin from 'firebase-admin';
-import { firebasePrivateKey } from '../../../config';
+import { NOVU_API_KEY } from '../../../config';
+import { Novu, PushProviderIdEnum } from '@novu/node';
+import { userService } from '../../User';
 
 export class PushNotificationService {
-  private intialized: boolean;
-  constructor() {
-    this.intialized = false;
-    this.initializeApp();
-  }
-  private initializeApp() {
-    if (!this.intialized) {
-      admin.initializeApp({
-        credential: admin.credential.cert(
-          JSON.parse(firebasePrivateKey) as admin.ServiceAccount,
-        ),
+  private readonly WORKFLOW = 'digest-workflow-example';
+  async registerUsersToNovu() {
+    try {
+      const novu = new Novu(NOVU_API_KEY);
+      const usersDeviceToken = await userService.findUsersDeviceToken();
+      usersDeviceToken.forEach(async (UserAndToken) => {
+        try {
+          await novu.subscribers.get(UserAndToken.id.toString());
+        } catch {
+          await novu.subscribers.identify(UserAndToken.id.toString(), {});
+          if (UserAndToken.DeviceToken?.token) {
+            await novu.subscribers.setCredentials(
+              UserAndToken.id.toString(),
+              PushProviderIdEnum.FCM,
+              { deviceTokens: [UserAndToken?.DeviceToken?.token] },
+            );
+          }
+        }
       });
-      this.intialized = true;
+    } catch {
+      throw new Error();
     }
   }
-  async send(args: {
-    deviceToken: string;
-    title: string;
-    description: string;
-  }) {
-    const { deviceToken, title, description } = args;
-    const message = {
-      notification: {
-        title,
-        body: description,
-      },
-      token: deviceToken,
-    };
-    await admin.messaging().send(message);
+
+  async notificationsTrigger(
+    payload: { title: string; description: string },
+    id: string,
+  ) {
+    try {
+      const novu = new Novu(NOVU_API_KEY);
+      await novu.trigger(this.WORKFLOW, {
+        to: { subscriberId: id },
+        payload: { title: payload.title, description: payload.description },
+      });
+      console.log('Notification sent successfully');
+    } catch {
+      throw new Error();
+    }
   }
 }
 
