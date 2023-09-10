@@ -23,6 +23,13 @@ export class PostService {
     content: z.string().nonempty({ message: 'Content is required' }),
   });
 
+  readonly updateCommentSchema = z.object({
+    content: z
+      .string()
+      .nonempty({ message: 'Content cannot be empty' })
+      .optional(),
+  });
+
   async createOne(args: Prisma.PostUncheckedCreateInput) {
     return await this.postRepo.createOne(args);
   }
@@ -36,6 +43,10 @@ export class PostService {
 
   async findOne(query: Prisma.PostWhereUniqueInput) {
     return await this.postRepo.findOne(query);
+  }
+
+  async findUser(query: Prisma.PostWhereUniqueInput) {
+    return await this.postRepo.findUser(query);
   }
 
   async updateOne(
@@ -83,6 +94,21 @@ export class PostService {
     },
   ) {
     return await this.postRepo.findPostComments(query, { ...options });
+  }
+
+  async findComment(query: Prisma.CommentWhereUniqueInput) {
+    return await this.postRepo.findComment(query);
+  }
+
+  async updateComment(
+    query: Prisma.CommentWhereUniqueInput,
+    args: Prisma.CommentUpdateInput,
+  ) {
+    return await this.postRepo.updateComment(query, args);
+  }
+
+  async deleteComment(query: Prisma.CommentWhereUniqueInput) {
+    return await this.postRepo.deleteComment(query);
   }
 }
 
