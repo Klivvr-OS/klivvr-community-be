@@ -5,22 +5,6 @@ import { requestQueryPaginationSchema } from '../helpers';
 
 const router = express.Router();
 
-//todo: don't miss to delete this route, it's just for testing
-router.post(
-  '/',
-  endpoint(async (req, res) => {
-    const notification = notificationService.createNotificationSchema.parse(
-      req.body,
-    );
-    const userId = req.user?.id;
-    await notificationService.createOne({
-      ...notification,
-      userId: userId as number,
-    });
-    res.status(201).json({ message: 'Notification created successfully' });
-  }),
-);
-
 router.get(
   '/',
   endpoint(async (req, res) => {
