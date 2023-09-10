@@ -71,6 +71,16 @@ export class EventService {
     return await this.eventRepo.updateOne(query, args);
   }
 
+  async upsertEvent(
+    query: Prisma.EventWhereUniqueInput,
+    options: {
+      create: Prisma.EventUncheckedCreateInput;
+      update: Prisma.EventUncheckedUpdateInput;
+    },
+  ) {
+    return await this.eventRepo.upsertEvent(query, options);
+  }
+
   async deleteOne(query: Prisma.EventWhereUniqueInput) {
     return await this.eventRepo.deleteOne(query);
   }

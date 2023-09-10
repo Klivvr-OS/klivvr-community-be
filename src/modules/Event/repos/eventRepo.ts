@@ -36,7 +36,8 @@ export class EventRepo {
             "endTime",
             "image",
             "eventType",
-            DATE_PART('year', current_date) || '-' || DATE_PART('month', "date") || '-' || DATE_PART('day', "date") AS "date"
+            "userId",
+            TO_CHAR("date", 'YYYY-MM-DD') AS "date"
         FROM
             "Event" 
         WHERE
@@ -67,6 +68,20 @@ export class EventRepo {
     args: Prisma.EventUpdateInput,
   ) {
     return await this.client.event.update({ where: query, data: args });
+  }
+
+  async upsertEvent(
+    query: Prisma.EventWhereUniqueInput,
+    options: {
+      create: Prisma.EventUncheckedCreateInput;
+      update: Prisma.EventUncheckedUpdateInput;
+    },
+  ) {
+    return await this.client.event.upsert({
+      where: query,
+      create: options.create,
+      update: options.update,
+    });
   }
 
   async deleteOne(query: Prisma.EventWhereUniqueInput) {
