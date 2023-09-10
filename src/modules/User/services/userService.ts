@@ -129,6 +129,10 @@ export class UserService {
     return await this.userRepo.findManyWithPagination(query, options);
   }
 
+  async findUsersDeviceToken() {
+    return await this.userRepo.findUsersDeviceToken();
+  }
+
   async findOne(
     args: Prisma.UserWhereInput,
     options?: { select: Prisma.UserSelect },
@@ -140,38 +144,57 @@ export class UserService {
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
   ) {
-    let createBirthdayEvent;
-    let createAnniversaryEvent;
     const updatedUser = await this.userRepo.updateOne(query, args);
-    const event = await eventService.findManyByUserId({
+    const events = await eventService.findManyByUserId({
       userId: updatedUser.id,
     });
-    const userPreviousBirthdayEvent = event.find(
+    const userPreviousBirthdayEvent = events.find(
       (e) => e.eventType === 'BIRTHDAY',
     );
-    const userPreviousAnniversaryEvent = event.find(
+    const userPreviousAnniversaryEvent = events.find(
       (e) => e.eventType === 'ANNIVERSARY',
     );
-    if (updatedUser?.birthdate && !userPreviousBirthdayEvent) {
-      createBirthdayEvent = await eventService.createOne({
-        name: updatedUser.firstName + ' ' + updatedUser.lastName + ' Birthday',
-        date: updatedUser.birthdate,
-        eventType: 'BIRTHDAY',
-        userId: updatedUser.id,
-        image: updatedUser.image,
-      });
+    if (updatedUser.birthdate) {
+      await eventService.upsertEvent(
+        { id: userPreviousBirthdayEvent?.id || 0 },
+        {
+          create: {
+            name:
+              updatedUser.firstName + ' ' + updatedUser.lastName + ' Birthday',
+            eventType: 'BIRTHDAY',
+            image: updatedUser.image,
+            date: updatedUser.birthdate,
+            userId: updatedUser.id,
+          },
+          update: {
+            date: updatedUser.birthdate,
+          },
+        },
+      );
     }
-    if (updatedUser?.hiringDate && !userPreviousAnniversaryEvent) {
-      createAnniversaryEvent = await eventService.createOne({
-        name:
-          updatedUser.firstName + ' ' + updatedUser.lastName + ' Anniversary',
-        date: updatedUser.hiringDate,
-        eventType: 'ANNIVERSARY',
-        userId: updatedUser.id,
-        image: updatedUser.image,
-      });
+
+    if (updatedUser?.hiringDate) {
+      await eventService.upsertEvent(
+        { id: userPreviousAnniversaryEvent?.id || 0 },
+        {
+          create: {
+            name:
+              updatedUser.firstName +
+              ' ' +
+              updatedUser.lastName +
+              ' Anniversary',
+            eventType: 'ANNIVERSARY',
+            image: updatedUser.image,
+            date: updatedUser.hiringDate,
+            userId: updatedUser.id,
+          },
+          update: {
+            date: updatedUser.hiringDate,
+          },
+        },
+      );
     }
-    return { updatedUser, createBirthdayEvent, createAnniversaryEvent };
+    return { updatedUser };
   }
 
   async checkVerificationCode(args: Prisma.UserWhereInput) {
