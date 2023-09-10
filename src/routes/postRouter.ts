@@ -1,4 +1,8 @@
-import { postService } from '../modules';
+import {
+  notificationService,
+  postService,
+  pushNotificationService,
+} from '../modules';
 import express from 'express';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
@@ -134,6 +138,7 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
+    const user = await postService.findUser({ id });
     const like = await postService.findLike({
       userId: req.user?.id as number,
       postId: id,
@@ -146,6 +151,22 @@ router.post(
       userId: userId as number,
       postId: id,
     });
+    if (user) {
+      const title = 'New like',
+        description = `${user.user.firstName} ${user.user.lastName} liked your post`;
+      await pushNotificationService.notificationsTrigger(
+        {
+          title,
+          description,
+        },
+        user.user.id.toString(),
+      );
+      await notificationService.createOne({
+        title,
+        description,
+        userId: user.user.id,
+      });
+    }
     res.status(200).json({ message: 'Liked' });
   }),
 );
@@ -178,6 +199,7 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
+    const user = await postService.findUser({ id });
     const userId = req.user?.id;
     const { content } = postService.createCommentSchema.parse(req.body);
     const postComments = await postService.createComment({
@@ -185,6 +207,24 @@ router.post(
       userId: userId as number,
       postId: id,
     });
+    if (user) {
+      const title = 'New comment',
+        description = `${user.user.firstName} ${user.user.lastName} commented on your post`;
+      await Promise.all([
+        pushNotificationService.notificationsTrigger(
+          {
+            title,
+            description,
+          },
+          user.user.id.toString(),
+        ),
+        notificationService.createOne({
+          title,
+          description,
+          userId: user.user.id,
+        }),
+      ]);
+    }
     res.status(201).json(postComments);
   }),
 );
@@ -205,6 +245,60 @@ router.get(
       { pageNumber, pageSize },
     );
     res.status(200).json({ post: post, comments: postComments });
+  }),
+);
+
+router.put(
+  '/:id/comments/:commentId',
+  endpoint(async (req, res) => {
+    const id = Number(req.params.id);
+    const commentId = Number(req.params.commentId);
+
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+
+    const comment = await postService.findComment({ id: commentId });
+    if (!comment) {
+      throw new CustomError('Comment not found', 404);
+    }
+
+    const userId = req.user?.id;
+    if (comment.userId !== userId) {
+      throw new CustomError('Forbidden', 403);
+    }
+
+    const { content } = postService.updateCommentSchema.parse(req.body);
+    const updatedCommentObject = await postService.updateComment(
+      { id: commentId },
+      { content },
+    );
+
+    res.status(200).json({
+      message: 'Comment updated successfully',
+      updatedCommentObject,
+    });
+  }),
+);
+
+router.get(
+  '/:id/comments/:commentId',
+  endpoint(async (req, res) => {
+    const id = Number(req.params.id);
+    const commentId = Number(req.params.commentId);
+
+    const post = await postService.findOne({ id });
+    if (!post) {
+      throw new CustomError('Post not found', 404);
+    }
+
+    const comment = await postService.findComment({ id: commentId });
+    if (!comment) {
+      throw new CustomError('Comment not found', 404);
+    }
+
+    res.status(200).json(comment);
   }),
 );
 
