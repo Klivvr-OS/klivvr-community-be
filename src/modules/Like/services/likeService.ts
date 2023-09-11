@@ -4,16 +4,16 @@ import { Prisma } from '@prisma/client';
 export class LikeService {
   constructor(private readonly likeRepo: LikeRepo) {}
 
-  async addLike(args: Prisma.LikeUncheckedCreateInput) {
-    return await this.likeRepo.addLike(args);
+  async createOne(args: Prisma.LikeUncheckedCreateInput) {
+    return await this.likeRepo.createOne(args);
   }
 
-  async findLike(query: Prisma.LikeWhereInput) {
-    return await this.likeRepo.findLike(query);
+  async findOne(query: Prisma.LikeWhereInput) {
+    return await this.likeRepo.findOne(query);
   }
 
-  async unlike(args: Prisma.LikeWhereUniqueInput) {
-    return await this.likeRepo.unlike(args);
+  async deleteOne(args: Prisma.LikeWhereUniqueInput) {
+    return await this.likeRepo.deleteOne(args);
   }
 }
 
