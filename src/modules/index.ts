@@ -3,4 +3,7 @@ export * from './User';
 export * from './ResetPasswordCode';
 export * from './Notification';
 export * from './DeviceToken';
-export * from './PushNotification';
+export * from './Novu';
+export * from './Like';
+export * from './Comment';
+export * from './Event';
