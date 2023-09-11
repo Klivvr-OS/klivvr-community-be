@@ -12,7 +12,7 @@ router.get(
       req.query,
     );
     const userId = req.user?.id;
-    const notifications = await notificationService.findMany(
+    const notifications = await notificationService.findManyWithPagination(
       {
         userId,
       },

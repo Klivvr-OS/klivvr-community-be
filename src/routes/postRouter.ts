@@ -141,7 +141,7 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const like = await likeService.findLike({
+    const like = await likeService.findOne({
       userId: req.user?.id as number,
       postId: id,
     });
@@ -149,7 +149,7 @@ router.post(
       throw new CustomError('Forbidden', 403);
     }
     const userId = req.user?.id;
-    await likeService.addLike({
+    await likeService.createOne({
       userId: userId as number,
       postId: id,
     });
@@ -186,12 +186,12 @@ router.delete(
       throw new CustomError('Post not found', 404);
     }
     const userId = req.user?.id;
-    const like = await likeService.findLike({
+    const like = await likeService.findOne({
       userId: userId as number,
       postId: id,
     });
     if (like) {
-      await likeService.unlike({ id: like.id });
+      await likeService.deleteOne({ id: like.id });
     }
     res.status(200).json({ message: 'Unliked' });
   }),
@@ -211,7 +211,7 @@ router.post(
     });
     const userId = req.user?.id;
     const { content } = postService.createCommentSchema.parse(req.body);
-    const postComments = await commentService.createComment({
+    const postComments = await commentService.createOne({
       content,
       userId: userId as number,
       postId: id,
@@ -249,7 +249,7 @@ router.get(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const postComments = await commentService.findPostComments(
+    const postComments = await commentService.findManyWithPagination(
       { postId: id },
       { pageNumber, pageSize },
     );
@@ -268,7 +268,7 @@ router.put(
       throw new CustomError('Post not found', 404);
     }
 
-    const comment = await commentService.findComment({ id: commentId });
+    const comment = await commentService.findOne({ id: commentId });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
     }
@@ -279,7 +279,7 @@ router.put(
     }
 
     const { content } = postService.updateCommentSchema.parse(req.body);
-    const updatedCommentObject = await commentService.updateComment(
+    const updatedCommentObject = await commentService.updateOne(
       { id: commentId },
       { content },
     );
@@ -302,7 +302,7 @@ router.get(
       throw new CustomError('Post not found', 404);
     }
 
-    const comment = await commentService.findComment({ id: commentId });
+    const comment = await commentService.findOne({ id: commentId });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
     }
