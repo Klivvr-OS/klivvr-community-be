@@ -85,7 +85,7 @@ export class NotificationService {
     });
   }
 
-  async findMany(
+  async findManyWithPagination(
     query: Prisma.NotificationWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
