@@ -26,6 +26,22 @@ export class EventService {
     image: z.string().optional(),
   });
 
+  isEventToday(eventDate: Date) {
+    const today = new Date();
+    return (
+      eventDate.getDate() === today.getDate() &&
+      eventDate.getMonth() === today.getMonth()
+    );
+  }
+
+  convertEventStringsToTitleAndType(eventName: string, eventType: string) {
+    const eventNameParts = eventName.split(' ');
+    const firstTwoWords = eventNameParts.splice(0, 2).join(' ');
+    const capitalizedEventType =
+      eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
+    return { eventTitle: firstTwoWords, newType: capitalizedEventType };
+  }
+
   async createOne(args: Prisma.EventUncheckedCreateInput) {
     return await this.eventRepo.createOne(args);
   }
