@@ -45,10 +45,6 @@ export class PostService {
     return await this.postRepo.findOne(query);
   }
 
-  async findUser(query: Prisma.PostWhereUniqueInput) {
-    return await this.postRepo.findUser(query);
-  }
-
   async updateOne(
     query: Prisma.PostWhereUniqueInput,
     args: Prisma.PostUpdateInput,
@@ -60,18 +56,6 @@ export class PostService {
     return await this.postRepo.deleteOne(query);
   }
 
-  async addLike(args: Prisma.LikeUncheckedCreateInput) {
-    return await this.postRepo.addLike(args);
-  }
-
-  async findLike(query: Prisma.LikeWhereInput) {
-    return await this.postRepo.findLike(query);
-  }
-
-  async unlike(args: Prisma.LikeWhereUniqueInput) {
-    return await this.postRepo.unlike(args);
-  }
-
   async countLikesAndComments(
     options: {
       pageNumber: number;
@@ -80,35 +64,6 @@ export class PostService {
     postId?: number,
   ) {
     return await this.postRepo.countLikesAndComments({ ...options }, postId);
-  }
-
-  async createComment(args: Prisma.CommentUncheckedCreateInput) {
-    return await this.postRepo.createComment(args);
-  }
-
-  async findPostComments(
-    query: Prisma.CommentWhereInput,
-    options: {
-      pageNumber: number;
-      pageSize: number;
-    },
-  ) {
-    return await this.postRepo.findPostComments(query, { ...options });
-  }
-
-  async findComment(query: Prisma.CommentWhereUniqueInput) {
-    return await this.postRepo.findComment(query);
-  }
-
-  async updateComment(
-    query: Prisma.CommentWhereUniqueInput,
-    args: Prisma.CommentUpdateInput,
-  ) {
-    return await this.postRepo.updateComment(query, args);
-  }
-
-  async deleteComment(query: Prisma.CommentWhereUniqueInput) {
-    return await this.postRepo.deleteComment(query);
   }
 }
 

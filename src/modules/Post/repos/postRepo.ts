@@ -24,15 +24,6 @@ export class PostRepo {
     return await this.client.post.findFirst({ where: query });
   }
 
-  async findUser(query: Prisma.PostWhereUniqueInput) {
-    return await this.client.post.findFirst({
-      where: query,
-      select: {
-        user: { select: { id: true, firstName: true, lastName: true } },
-      },
-    });
-  }
-
   async updateOne(
     query: Prisma.PostWhereUniqueInput,
     args: Prisma.PostUpdateInput,
@@ -42,18 +33,6 @@ export class PostRepo {
 
   async deleteOne(query: Prisma.PostWhereUniqueInput) {
     return await this.client.post.delete({ where: query });
-  }
-
-  async addLike(args: Prisma.LikeUncheckedCreateInput) {
-    return await this.client.like.create({ data: args });
-  }
-
-  async findLike(query: Prisma.LikeWhereInput) {
-    return await this.client.like.findFirst({ where: query });
-  }
-
-  async unlike(args: Prisma.LikeWhereUniqueInput) {
-    return await this.client.like.delete({ where: args });
   }
 
   async countLikesAndComments(
@@ -100,39 +79,6 @@ export class PostRepo {
       OFFSET
         ${skip}
     `;
-  }
-
-  async createComment(args: Prisma.CommentUncheckedCreateInput) {
-    return await this.client.comment.create({ data: args });
-  }
-
-  async findPostComments(
-    query: Prisma.CommentWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.client.comment.findMany({
-      where: query,
-      ...paginate(options),
-      include: {
-        user: { select: { firstName: true, lastName: true, image: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async findComment(query: Prisma.CommentWhereUniqueInput) {
-    return await this.client.comment.findFirst({ where: query });
-  }
-
-  async updateComment(
-    query: Prisma.CommentWhereUniqueInput,
-    args: Prisma.CommentUpdateInput,
-  ) {
-    return await this.client.comment.update({ where: query, data: args });
-  }
-
-  async deleteComment(query: Prisma.CommentWhereUniqueInput) {
-    return await this.client.comment.delete({ where: query });
   }
 }
 

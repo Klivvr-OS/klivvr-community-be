@@ -1,7 +1,10 @@
 import {
   notificationService,
   postService,
-  pushNotificationService,
+  novuService,
+  likeService,
+  commentService,
+  userService,
 } from '../modules';
 import express from 'express';
 import { multerUpload } from '../middlewares/Multer';
@@ -138,8 +141,7 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const user = await postService.findUser({ id });
-    const like = await postService.findLike({
+    const like = await likeService.findLike({
       userId: req.user?.id as number,
       postId: id,
     });
@@ -147,25 +149,29 @@ router.post(
       throw new CustomError('Forbidden', 403);
     }
     const userId = req.user?.id;
-    await postService.addLike({
+    await likeService.addLike({
       userId: userId as number,
       postId: id,
     });
-    if (user) {
+    const user = await userService.findOne({ id: post.userId });
+    const userWhoLiked = await userService.findOne({ id: userId as number });
+    if (user && userWhoLiked) {
       const title = 'New like',
-        description = `${user.user.firstName} ${user.user.lastName} liked your post`;
-      await pushNotificationService.notificationsTrigger(
-        {
+        description = `${userWhoLiked.firstName} ${userWhoLiked.lastName} liked your post`;
+      await Promise.all([
+        novuService.notificationsTrigger(
+          {
+            title,
+            description,
+          },
+          user.id.toString(),
+        ),
+        notificationService.createOne({
           title,
           description,
-        },
-        user.user.id.toString(),
-      );
-      await notificationService.createOne({
-        title,
-        description,
-        userId: user.user.id,
-      });
+          userId: user.id,
+        }),
+      ]);
     }
     res.status(200).json({ message: 'Liked' });
   }),
@@ -180,12 +186,12 @@ router.delete(
       throw new CustomError('Post not found', 404);
     }
     const userId = req.user?.id;
-    const like = await postService.findLike({
+    const like = await likeService.findLike({
       userId: userId as number,
       postId: id,
     });
     if (like) {
-      await postService.unlike({ id: like.id });
+      await likeService.unlike({ id: like.id });
     }
     res.status(200).json({ message: 'Unliked' });
   }),
@@ -199,29 +205,32 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const user = await postService.findUser({ id });
+    const user = await userService.findOne({ id: post.userId });
+    const userWhoCommented = await userService.findOne({
+      id: req.user?.id as number,
+    });
     const userId = req.user?.id;
     const { content } = postService.createCommentSchema.parse(req.body);
-    const postComments = await postService.createComment({
+    const postComments = await commentService.createComment({
       content,
       userId: userId as number,
       postId: id,
     });
-    if (user) {
+    if (user && userWhoCommented) {
       const title = 'New comment',
-        description = `${user.user.firstName} ${user.user.lastName} commented on your post`;
+        description = `${userWhoCommented.firstName} ${userWhoCommented.lastName} commented on your post`;
       await Promise.all([
-        pushNotificationService.notificationsTrigger(
+        novuService.notificationsTrigger(
           {
             title,
             description,
           },
-          user.user.id.toString(),
+          user.id.toString(),
         ),
         notificationService.createOne({
           title,
           description,
-          userId: user.user.id,
+          userId: user.id,
         }),
       ]);
     }
@@ -240,7 +249,7 @@ router.get(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const postComments = await postService.findPostComments(
+    const postComments = await commentService.findPostComments(
       { postId: id },
       { pageNumber, pageSize },
     );
@@ -259,7 +268,7 @@ router.put(
       throw new CustomError('Post not found', 404);
     }
 
-    const comment = await postService.findComment({ id: commentId });
+    const comment = await commentService.findComment({ id: commentId });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
     }
@@ -270,7 +279,7 @@ router.put(
     }
 
     const { content } = postService.updateCommentSchema.parse(req.body);
-    const updatedCommentObject = await postService.updateComment(
+    const updatedCommentObject = await commentService.updateComment(
       { id: commentId },
       { content },
     );
@@ -293,7 +302,7 @@ router.get(
       throw new CustomError('Post not found', 404);
     }
 
-    const comment = await postService.findComment({ id: commentId });
+    const comment = await commentService.findComment({ id: commentId });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
     }
