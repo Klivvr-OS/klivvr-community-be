@@ -5,11 +5,11 @@ import { paginate } from '../../../helpers';
 export class CommentRepo {
   constructor(private readonly client: PrismaClient) {}
 
-  async createComment(args: Prisma.CommentUncheckedCreateInput) {
+  async createOne(args: Prisma.CommentUncheckedCreateInput) {
     return await this.client.comment.create({ data: args });
   }
 
-  async findPostComments(
+  async findManyWithPagination(
     query: Prisma.CommentWhereInput,
     options: { pageNumber: number; pageSize: number },
   ) {
@@ -23,18 +23,18 @@ export class CommentRepo {
     });
   }
 
-  async findComment(query: Prisma.CommentWhereUniqueInput) {
+  async findOne(query: Prisma.CommentWhereUniqueInput) {
     return await this.client.comment.findFirst({ where: query });
   }
 
-  async updateComment(
+  async updateOne(
     query: Prisma.CommentWhereUniqueInput,
     args: Prisma.CommentUpdateInput,
   ) {
     return await this.client.comment.update({ where: query, data: args });
   }
 
-  async deleteComment(query: Prisma.CommentWhereUniqueInput) {
+  async deleteOne(query: Prisma.CommentWhereUniqueInput) {
     return await this.client.comment.delete({ where: query });
   }
 }
