@@ -155,7 +155,7 @@ export class UserService {
       (e) => e.eventType === 'ANNIVERSARY',
     );
     if (updatedUser.birthdate) {
-      await eventService.upsertEvent(
+      await eventService.upsertOne(
         { id: userPreviousBirthdayEvent?.id },
         {
           create: {
@@ -174,7 +174,7 @@ export class UserService {
     }
 
     if (updatedUser?.hiringDate) {
-      await eventService.upsertEvent(
+      await eventService.upsertOne(
         { id: userPreviousAnniversaryEvent?.id },
         {
           create: {
