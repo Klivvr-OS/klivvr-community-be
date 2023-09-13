@@ -11,6 +11,7 @@ import { requestQueryPaginationSchema } from '../helpers';
 import { klivvrPickService } from '../modules/KilvvrPick';
 import { klivvrPickNomineeService } from '../modules/KlivvrPickNominee';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
+import { notificationService, novuService, userService } from '../modules';
 
 const router = express.Router();
 
@@ -24,6 +25,15 @@ router.post(
       nomineeId,
       nominatorUserId,
     );
+    const title = 'Klivvr Pick Nomination',
+      description = 'You have been nominated for Klivvr Pick';
+    await Promise.all([
+      novuService.triggerNotification(
+        { title, description },
+        nomineeId.toString(),
+      ),
+      notificationService.createOne({ title, description, userId: nomineeId }),
+    ]);
     res.status(201).json(klivvrPickNomineeObject);
   }),
 );
@@ -116,6 +126,24 @@ router.post(
       ...validatedKlivvrPick,
       nomineeId: userId as number,
     });
+    const title = 'Klivvr Pick',
+      description = 'This week picks are posted check it out';
+    const usersWithDeviceTokens = await userService.findUsersDeviceToken();
+    for (const user of usersWithDeviceTokens) {
+      if (user.id !== userId) {
+        await Promise.all([
+          novuService.triggerNotification(
+            { title, description },
+            user.id.toString(),
+          ),
+          notificationService.createOne({
+            title,
+            description,
+            userId: user.id,
+          }),
+        ]);
+      }
+    }
     res.status(200).json(klivvrPickObject);
   }),
 );
