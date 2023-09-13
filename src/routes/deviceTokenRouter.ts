@@ -4,10 +4,10 @@ import { deviceTokenService } from '../modules';
 
 const router = express.Router();
 
-router.post(
+router.put(
   '/',
   endpoint(async (req, res) => {
-    const deviceToken = deviceTokenService.createDeviceTokenSchema.parse(
+    const deviceToken = deviceTokenService.updateDeviceTokenSchema.parse(
       req.body,
     );
     const userId = req.user?.id;
