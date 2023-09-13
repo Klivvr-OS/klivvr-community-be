@@ -14,15 +14,12 @@ export class NotificationService {
       pageNumber: 1,
       pageSize: 10,
     })) as Event[];
-
     const todayEvents = events.filter((event) => {
       return eventService.isEventToday(new Date(event.date));
     });
-
     const users = await userService.findUsersDeviceToken();
-
-    todayEvents.forEach((event) => {
-      users.forEach(async (user) => {
+    for (const event of todayEvents) {
+      for (const user of users) {
         let title = '',
           description = '';
         if (
@@ -36,8 +33,9 @@ export class NotificationService {
               event.eventType,
             ).eventTitle
           }!`;
-        } else if (user.id === event.userId) return;
-        else if (
+        } else if (user.id === event.userId) {
+          return;
+        } else if (
           event.eventType === 'BIRTHDAY' ||
           event.eventType === 'ANNIVERSARY'
         ) {
@@ -53,36 +51,16 @@ export class NotificationService {
               event.eventType,
             ).newType
           }!`;
-        } else if (event.eventType === 'WEDDING') {
-          title = `Today is ${event.name} 🤵👰`;
-          description = `Don't miss to wish ${
-            eventService.convertEventStringsToTitleAndType(
-              event.name,
-              event.eventType,
-            ).eventTitle
-          } a lifetime of love and happiness!`;
-        } else if (event.eventType === 'FAREWELL') {
-          title = `Today is ${event.name} 😥`;
-          description = `Don't miss to wish ${
-            eventService.convertEventStringsToTitleAndType(
-              event.name,
-              event.eventType,
-            ).eventTitle
-          } luck in his new journey!`;
         }
         await Promise.all([
-          novuService.notificationsTrigger(
+          novuService.triggerNotification(
             { title, description },
             user.id.toString(),
           ),
-          this.createOne({
-            title,
-            description,
-            userId: user.id,
-          }),
+          this.createOne({ title, description, userId: user.id }),
         ]);
-      });
-    });
+      }
+    }
   }
 
   async findManyWithPagination(
