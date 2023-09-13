@@ -1,50 +1,32 @@
 import { Novu, PushProviderIdEnum } from '@novu/node';
 import { NOVU_API_KEY } from '../../../config';
-import { userService } from '../../User';
 
 export class NovuService {
   private readonly novu: Novu;
-  private readonly WORKFLOW = 'digest-workflow-example';
+  private readonly WORKFLOW = 'push-notification';
 
   constructor() {
     this.novu = new Novu(NOVU_API_KEY);
   }
 
-  async registerUsersToNovu() {
-    try {
-      const usersDeviceToken = await userService.findUsersDeviceToken();
-      usersDeviceToken.forEach(async (UserAndToken) => {
-        try {
-          await this.novu.subscribers.get(UserAndToken.id.toString());
-        } catch {
-          await this.novu.subscribers.identify(UserAndToken.id.toString(), {});
-          if (UserAndToken.DeviceToken?.token) {
-            await this.novu.subscribers.setCredentials(
-              UserAndToken.id.toString(),
-              PushProviderIdEnum.FCM,
-              { deviceTokens: [UserAndToken?.DeviceToken?.token] },
-            );
-          }
-        }
-      });
-    } catch {
-      throw new Error();
-    }
+  async identifyUser(id: string) {
+    await this.novu.subscribers.identify(id, {});
   }
 
-  async notificationsTrigger(
+  async setFcmDeviceToken(id: string, deviceToken: string) {
+    await this.novu.subscribers.setCredentials(id, PushProviderIdEnum.FCM, {
+      deviceTokens: [deviceToken],
+    });
+  }
+
+  async triggerNotification(
     payload: { title: string; description: string },
     id: string,
   ) {
-    try {
-      await this.novu.trigger(this.WORKFLOW, {
-        to: { subscriberId: id },
-        payload: { title: payload.title, description: payload.description },
-      });
-      console.log('Notification sent successfully');
-    } catch {
-      throw new Error();
-    }
+    await this.novu.trigger(this.WORKFLOW, {
+      to: { subscriberId: id },
+      payload,
+    });
   }
 }
 
