@@ -43,42 +43,54 @@ export class PostRepo {
     const postIdQuery = postId
       ? Prisma.sql`and p.id = ${postId}`
       : Prisma.sql``;
-    return await this.client.$queryRaw`
-    select
-      p.*,
-      coalesce(l.likes::int, 0) as "likes",
-      coalesce(c.comments::int, 0) as "comments"
-    from
-      "Post" p
-    left join (
-      select
-        "postId",
-        COUNT(*) as "likes"
-      from
-        "Like"
-      group by
-        "postId"
-    ) l on
-      p.id = l."postId" 
-    left join (
-      select
-        "postId",
-        COUNT(*) as "comments"
-      from
-        "Comment"
-      group by
-        "postId"
-    ) c on
-      p.id = c."postId"
-    where true
-      ${postIdQuery}
-      Order by
-        "createdAt" DESC
-      LIMIT
-        ${take}
-      OFFSET
-        ${skip}
-    `;
+    const query = await Promise.all([
+      this.client.$queryRaw`
+          select
+            p.*,
+            coalesce(l.likes::int, 0) as "likes",
+            coalesce(c.comments::int, 0) as "comments"
+          from
+            "Post" p
+          left join (
+            select
+              "postId",
+              COUNT(*) as "likes"
+            from
+              "Like"
+            group by
+              "postId"
+          ) l on
+            p.id = l."postId" 
+          left join (
+            select
+              "postId",
+              COUNT(*) as "comments"
+            from
+              "Comment"
+            group by
+              "postId"
+          ) c on
+            p.id = c."postId"
+          where true
+            ${postIdQuery}
+            Order by
+              "createdAt" DESC
+            LIMIT
+              ${take}
+            OFFSET
+              ${skip}
+    `,
+      this.client.$queryRaw`
+            select
+              count(*) as "total"
+            from
+              "Post"
+            `,
+    ]);
+    return {
+      posts: query[0],
+      total: Number((query[1] as [{ total: bigint }])[0].total),
+    };
   }
 }
 

@@ -50,14 +50,14 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const totalLikesComments = await postService.countLikesAndComments({
+    const postsAndItsTotal = await postService.countLikesAndComments({
       pageNumber,
       pageSize,
     });
-    if (!totalLikesComments) {
+    if (!postsAndItsTotal) {
       throw new CustomError('Posts not found', 404);
     }
-    res.status(200).json({ posts: totalLikesComments });
+    res.status(200).json(postsAndItsTotal);
   }),
 );
 
@@ -159,7 +159,7 @@ router.post(
       const title = 'New like',
         description = `${userWhoLiked.firstName} ${userWhoLiked.lastName} liked your post`;
       await Promise.all([
-        novuService.notificationsTrigger(
+        novuService.triggerNotification(
           {
             title,
             description,
@@ -220,7 +220,7 @@ router.post(
       const title = 'New comment',
         description = `${userWhoCommented.firstName} ${userWhoCommented.lastName} commented on your post`;
       await Promise.all([
-        novuService.notificationsTrigger(
+        novuService.triggerNotification(
           {
             title,
             description,
