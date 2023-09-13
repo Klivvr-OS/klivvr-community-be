@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 import { PasswordService, expiryDate } from '../../../helpers';
 import { eventService } from '../../Event';
+import { novuService } from '../../Novu';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '15m';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -86,27 +87,6 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
-    let createBirthdayEvent;
-    let createAnniversaryEvent;
-    if (createdUser.birthdate) {
-      createBirthdayEvent = await eventService.createOne({
-        name: createdUser.firstName + ' ' + createdUser.lastName + ' Birthday',
-        date: createdUser.birthdate,
-        eventType: 'BIRTHDAY',
-        userId: createdUser.id,
-        image: createdUser.image,
-      });
-    }
-    if (createdUser.hiringDate) {
-      createAnniversaryEvent = await eventService.createOne({
-        name:
-          createdUser.firstName + ' ' + createdUser.lastName + ' Anniversary',
-        date: createdUser.hiringDate,
-        eventType: 'ANNIVERSARY',
-        userId: createdUser.id,
-        image: createdUser.image,
-      });
-    }
     await sendingEmails(
       {
         to: args.email,
@@ -119,7 +99,8 @@ export class UserService {
     if (createdUser == null) {
       throw new CustomError('Internal Server Error', 500);
     }
-    return { createdUser, createBirthdayEvent, createAnniversaryEvent };
+    await novuService.identifyUser(createdUser.id.toString());
+    return createdUser;
   }
 
   async findManyWithPagination(
@@ -156,7 +137,7 @@ export class UserService {
     );
     if (updatedUser.birthdate) {
       await eventService.upsertOne(
-        { id: userPreviousBirthdayEvent?.id },
+        { id: userPreviousBirthdayEvent?.id || 0 },
         {
           create: {
             name:
@@ -175,7 +156,7 @@ export class UserService {
 
     if (updatedUser?.hiringDate) {
       await eventService.upsertOne(
-        { id: userPreviousAnniversaryEvent?.id },
+        { id: userPreviousAnniversaryEvent?.id || 0 },
         {
           create: {
             name:
