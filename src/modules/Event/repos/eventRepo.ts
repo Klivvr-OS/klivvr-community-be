@@ -5,10 +5,6 @@ import prisma from '../../../database/client';
 export class EventRepo {
   constructor(private readonly client: PrismaClient) {}
 
-  async createOne(args: Prisma.EventUncheckedCreateInput) {
-    return await this.client.event.create({ data: args });
-  }
-
   async findManyWithPagination(
     query: Prisma.EventWhereInput,
     options: { pageNumber: number; pageSize: number },
@@ -32,8 +28,6 @@ export class EventRepo {
         SELECT
             "id",
             "name",
-            "startTime",
-            "endTime",
             "image",
             "eventType",
             "userId",
@@ -41,11 +35,11 @@ export class EventRepo {
         FROM
             "Event" 
         WHERE
-            DATE_PART('month', "date") = DATE_PART('month', current_date)
+            DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
             AND
-            DATE_PART('day', "date") = DATE_PART('day', current_date)
+            DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
             OR 
-            date(DATE_PART('year', current_date)||'-'||DATE_PART('month', "date")||'-'||DATE_PART('day', "date")) BETWEEN current_date AND current_date + interval '7 days'
+            date(DATE_PART('year', CURRENT_DATE)||'-'||DATE_PART('month', "date")||'-'||DATE_PART('day', "date")) BETWEEN CURRENT_DATE AND CURRENT_DATE + interval '7 days'
         LIMIT
             ${take}
         OFFSET
@@ -63,13 +57,6 @@ export class EventRepo {
     });
   }
 
-  async updateOne(
-    query: Prisma.EventWhereUniqueInput,
-    args: Prisma.EventUpdateInput,
-  ) {
-    return await this.client.event.update({ where: query, data: args });
-  }
-
   async upsertOne(
     query: Prisma.EventWhereUniqueInput,
     options: {
@@ -82,10 +69,6 @@ export class EventRepo {
       create: options.create,
       update: options.update,
     });
-  }
-
-  async deleteOne(query: Prisma.EventWhereUniqueInput) {
-    return await this.client.event.delete({ where: query });
   }
 }
 
