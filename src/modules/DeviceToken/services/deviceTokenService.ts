@@ -1,37 +1,26 @@
 import { Prisma } from '@prisma/client';
 import { DeviceTokenRepo, deviceTokenRepo } from '../repos/deviceTokenRepo';
 import { z } from 'zod';
+import { novuService } from '../../Novu';
 
 export class DeviceTokenService {
   constructor(private readonly deviceTokenRepo: DeviceTokenRepo) {}
 
-  readonly createDeviceTokenSchema = z
+  readonly updateDeviceTokenSchema = z
     .object({
       token: z.string(),
       deviceType: z.enum(['ANDROID', 'IOS']),
     })
     .required();
 
-  async createOne(args: Prisma.DeviceTokenUncheckedCreateInput) {
-    return await this.deviceTokenRepo.createOne(args);
-  }
-
-  async findOne(query: Prisma.DeviceTokenWhereInput) {
-    return await this.deviceTokenRepo.findOne(query);
-  }
-
-  async updateOne(
-    query: Prisma.DeviceTokenWhereUniqueInput,
-    args: Prisma.DeviceTokenUncheckedUpdateInput,
-  ) {
-    return await this.deviceTokenRepo.updateOne(query, args);
-  }
-
   async upsertOne(
     query: Prisma.DeviceTokenWhereUniqueInput,
     args: Prisma.DeviceTokenUncheckedCreateInput,
   ) {
-    return await this.deviceTokenRepo.upsertOne(query, args);
+    await Promise.all([
+      this.deviceTokenRepo.upsertOne(query, args),
+      novuService.setFcmDeviceToken(args.userId.toString(), args.token),
+    ]);
   }
 }
 
