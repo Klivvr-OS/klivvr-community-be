@@ -5,22 +5,6 @@ import { CustomError } from '../../../middlewares';
 export class EventService {
   constructor(private readonly eventRepo: EventRepo) {}
 
-  isEventToday(eventDate: Date) {
-    const today = new Date();
-    return (
-      eventDate.getDate() === today.getDate() &&
-      eventDate.getMonth() === today.getMonth()
-    );
-  }
-
-  convertEventStringsToTitleAndType(eventName: string, eventType: string) {
-    const eventNameParts = eventName.split(' ');
-    const firstTwoWords = eventNameParts.splice(0, 2).join(' ');
-    const capitalizedEventType =
-      eventType.charAt(0).toUpperCase() + eventType.slice(1).toLowerCase();
-    return { eventTitle: firstTwoWords, newType: capitalizedEventType };
-  }
-
   async findManyWithPagination(
     query: Prisma.EventWhereInput,
     options: { pageNumber: number; pageSize: number },
@@ -46,6 +30,10 @@ export class EventService {
 
   async findThisWeekEvents(options: { pageNumber: number; pageSize: number }) {
     return await this.eventRepo.findThisWeekEvents(options);
+  }
+
+  async findTodayEvents(options: { pageNumber: number; pageSize: number }) {
+    return await this.eventRepo.findTodayEvents(options);
   }
 
   async findManyByUserId(

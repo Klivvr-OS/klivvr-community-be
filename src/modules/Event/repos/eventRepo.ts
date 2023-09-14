@@ -47,6 +47,29 @@ export class EventRepo {
     `;
   }
 
+  async findTodayEvents(options: { pageNumber: number; pageSize: number }) {
+    const { skip, take } = paginate(options);
+    return await this.client.$queryRaw`
+        SELECT
+            "id",
+            "name",
+            "image",
+            "eventType",
+            "userId",
+            TO_CHAR("date", 'YYYY-MM-DD') AS "date"
+        FROM
+            "Event" 
+        WHERE
+            DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
+            AND
+            DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
+        LIMIT
+            ${take}
+        OFFSET
+            ${skip}
+    `;
+  }
+
   async findManyByUserId(
     query: { userId: number },
     options?: { select: Prisma.EventSelect },
