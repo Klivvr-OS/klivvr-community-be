@@ -14,6 +14,10 @@ import { Request, Response } from 'express';
 import { endpoint } from '../core/endpoint';
 import { CustomError } from '../middlewares';
 import { requestQueryPaginationSchema } from '../helpers';
+import {
+  getCommentNotificationPayload,
+  getLikeNotificationPayload,
+} from '../modules/Notification/services/config';
 
 const router = express.Router();
 
@@ -59,9 +63,6 @@ router.get(
       undefined,
       userId,
     );
-    if (!postsAndItsTotal) {
-      throw new CustomError('Posts not found', 404);
-    }
     res.status(200).json(postsAndItsTotal);
   }),
 );
@@ -138,16 +139,16 @@ router.delete(
 );
 
 router.post(
-  '/:id/like',
+  '/:postId/like',
   endpoint(async (req, res) => {
-    const id = Number(req.params.id);
-    const post = await postService.findOne({ id });
+    const postId = Number(req.params.postId);
+    const post = await postService.findOne({ id: postId });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
     const like = await likeService.findOne({
       userId: req.user?.id as number,
-      postId: id,
+      postId,
     });
     if (like) {
       throw new CustomError('Forbidden', 403);
@@ -155,13 +156,14 @@ router.post(
     const userId = req.user?.id;
     await likeService.createOne({
       userId: userId as number,
-      postId: id,
+      postId,
     });
     const user = await userService.findOne({ id: post.userId });
     const userWhoLiked = await userService.findOne({ id: userId as number });
     if (user && userWhoLiked) {
-      const title = 'New like',
-        description = `${userWhoLiked.firstName} ${userWhoLiked.lastName} liked your post`;
+      const { title, description } = getLikeNotificationPayload({
+        name: `${userWhoLiked.firstName} ${userWhoLiked.lastName}`,
+      });
       await Promise.all([
         novuService.triggerNotification(
           {
@@ -182,17 +184,17 @@ router.post(
 );
 
 router.delete(
-  '/:id/unlike',
+  '/:postId/unlike',
   endpoint(async (req, res) => {
-    const id = Number(req.params.id);
-    const post = await postService.findOne({ id });
+    const postId = Number(req.params.postId);
+    const post = await postService.findOne({ id: postId });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
     const userId = req.user?.id;
     const like = await likeService.findOne({
       userId: userId as number,
-      postId: id,
+      postId,
     });
     if (like) {
       await likeService.deleteOne({ id: like.id });
@@ -202,10 +204,10 @@ router.delete(
 );
 
 router.post(
-  '/:id/comments',
+  '/:postId/comments',
   endpoint(async (req, res) => {
-    const id = Number(req.params.id);
-    const post = await postService.findOne({ id });
+    const postId = Number(req.params.postId);
+    const post = await postService.findOne({ id: postId });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
@@ -218,11 +220,12 @@ router.post(
     const postComments = await commentService.createOne({
       content,
       userId: userId as number,
-      postId: id,
+      postId,
     });
     if (user && userWhoCommented) {
-      const title = 'New comment',
-        description = `${userWhoCommented.firstName} ${userWhoCommented.lastName} commented on your post`;
+      const { title, description } = getCommentNotificationPayload({
+        name: `${userWhoCommented.firstName} ${userWhoCommented.lastName}`,
+      });
       await Promise.all([
         novuService.triggerNotification(
           {
@@ -243,18 +246,18 @@ router.post(
 );
 
 router.get(
-  '/:id/comments',
+  '/:postId/comments',
   endpoint(async (req, res) => {
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const id = Number(req.params.id);
-    const post = await postService.findOne({ id });
+    const postId = Number(req.params.postId);
+    const post = await postService.findOne({ id: postId });
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
     const postComments = await commentService.findManyWithPagination(
-      { postId: id },
+      { postId },
       { pageNumber, pageSize },
     );
     res.status(200).json({ post: post, comments: postComments });
@@ -262,24 +265,20 @@ router.get(
 );
 
 router.put(
-  '/:id/comments/:commentId',
+  '/:postId/comments/:commentId',
   endpoint(async (req, res) => {
-    const id = Number(req.params.id);
+    const postId = Number(req.params.postId);
     const commentId = Number(req.params.commentId);
+    const userId = req.user?.id;
 
-    const post = await postService.findOne({ id });
-    if (!post) {
-      throw new CustomError('Post not found', 404);
-    }
+    const comment = await commentService.findOne({
+      id: commentId,
+      postId,
+      userId,
+    });
 
-    const comment = await commentService.findOne({ id: commentId });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
-    }
-
-    const userId = req.user?.id;
-    if (comment.userId !== userId) {
-      throw new CustomError('Forbidden', 403);
     }
 
     const { content } = postService.updateCommentSchema.parse(req.body);
@@ -296,17 +295,15 @@ router.put(
 );
 
 router.get(
-  '/:id/comments/:commentId',
+  '/:postId/comments/:commentId',
   endpoint(async (req, res) => {
-    const id = Number(req.params.id);
+    const postId = Number(req.params.postId);
     const commentId = Number(req.params.commentId);
 
-    const post = await postService.findOne({ id });
-    if (!post) {
-      throw new CustomError('Post not found', 404);
-    }
-
-    const comment = await commentService.findOne({ id: commentId });
+    const comment = await commentService.findOne({
+      id: commentId,
+      postId,
+    });
     if (!comment) {
       throw new CustomError('Comment not found', 404);
     }
