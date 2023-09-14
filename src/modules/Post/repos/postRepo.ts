@@ -35,9 +35,10 @@ export class PostRepo {
     return await this.client.post.delete({ where: query });
   }
 
-  async countLikesAndComments(
+  async postsWithLikesAndComments(
     options: { pageNumber: number; pageSize: number },
     postId?: number,
+    userId?: number,
   ) {
     const { skip, take } = paginate(options);
     const postIdQuery = postId
@@ -45,52 +46,22 @@ export class PostRepo {
       : Prisma.sql``;
     const query = await Promise.all([
       this.client.$queryRaw`
-          select
-            p.*,
-            coalesce(l.likes::int, 0) as "likes",
-            coalesce(c.comments::int, 0) as "comments"
-          from
-            "Post" p
-          left join (
-            select
-              "postId",
-              COUNT(*) as "likes"
-            from
-              "Like"
-            group by
-              "postId"
-          ) l on
-            p.id = l."postId" 
-          left join (
-            select
-              "postId",
-              COUNT(*) as "comments"
-            from
-              "Comment"
-            group by
-              "postId"
-          ) c on
-            p.id = c."postId"
-          where true
-            ${postIdQuery}
-            Order by
-              "createdAt" DESC
-            LIMIT
-              ${take}
-            OFFSET
-              ${skip}
+        SELECT p.*, u."firstName", u."lastName", u.image AS "userImage", 
+        COUNT(DISTINCT l."id")::int AS likes, COUNT(DISTINCT c."id")::int AS comments,
+        CASE WHEN l."userId" = ${userId} THEN true ELSE false END AS "isLiked"
+        FROM "Post" p 
+        LEFT JOIN "Like" l ON p.id = l."postId" 
+        LEFT JOIN "Comment" c ON p.id = c."postId" 
+        LEFT JOIN "User" u ON p."userId" = u.id
+        WHERE true ${postIdQuery}
+        GROUP BY p.id, u.id, l."userId"
+        ORDER BY p."createdAt" DESC
+        LIMIT ${take}
+        OFFSET ${skip}
     `,
-      this.client.$queryRaw`
-            select
-              count(*) as "total"
-            from
-              "Post"
-            `,
+      this.client.post.count({ where: { ...(postId ? { id: postId } : {}) } }),
     ]);
-    return {
-      posts: query[0],
-      total: Number((query[1] as [{ total: bigint }])[0].total),
-    };
+    return { posts: query[0], total: query[1] };
   }
 }
 

@@ -56,14 +56,19 @@ export class PostService {
     return await this.postRepo.deleteOne(query);
   }
 
-  async countLikesAndComments(
+  async postsWithLikesAndComments(
     options: {
       pageNumber: number;
       pageSize: number;
     },
     postId?: number,
+    userId?: number,
   ) {
-    return await this.postRepo.countLikesAndComments({ ...options }, postId);
+    return await this.postRepo.postsWithLikesAndComments(
+      { ...options },
+      postId,
+      userId,
+    );
   }
 }
 

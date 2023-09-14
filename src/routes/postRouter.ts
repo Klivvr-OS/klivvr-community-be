@@ -50,10 +50,15 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const postsAndItsTotal = await postService.countLikesAndComments({
-      pageNumber,
-      pageSize,
-    });
+    const userId = req.user?.id;
+    const postsAndItsTotal = await postService.postsWithLikesAndComments(
+      {
+        pageNumber,
+        pageSize,
+      },
+      undefined,
+      userId,
+    );
     if (!postsAndItsTotal) {
       throw new CustomError('Posts not found', 404);
     }
@@ -68,12 +73,11 @@ router.get(
     const { pageNumber, pageSize } = requestQueryPaginationSchema.parse(
       req.query,
     );
-    const post = await postService.countLikesAndComments(
-      {
-        pageNumber,
-        pageSize,
-      },
+    const userId = req.user?.id;
+    const post = await postService.postsWithLikesAndComments(
+      { pageNumber, pageSize },
       id,
+      userId,
     );
     if (!post) {
       throw new CustomError('Post not found', 404);
