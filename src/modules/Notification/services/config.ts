@@ -19,9 +19,17 @@ export const config = {
       description: `Happy anniversary to you!`,
     },
   },
+  KLIVVR_PICK_NOMINATION: {
+    title: 'Klivvr Pick Nomination',
+    description: 'You have been nominated for Klivvr Pick!',
+  },
+  KLIVVR_PICKS: {
+    title: 'Klivvr Picks',
+    description: 'This week picks are posted check it out!',
+  },
 };
 
-export const getNotificationPayload = (args: {
+export const getEventNotificationPayload = (args: {
   name: string;
   isCurrentUser: boolean;
   eventType: 'BIRTHDAY' | 'ANNIVERSARY';
@@ -33,5 +41,19 @@ export const getNotificationPayload = (args: {
     description: config[args.isCurrentUser ? 'CURRENT_USER' : 'OTHER_USERS'][
       args.eventType
     ].description.replace('{name}', args.name),
+  };
+};
+
+export const getKlivvrPickNominationPayload = () => {
+  return {
+    title: config.KLIVVR_PICK_NOMINATION.title,
+    description: config.KLIVVR_PICK_NOMINATION.description,
+  };
+};
+
+export const getPicksNotificationPayload = () => {
+  return {
+    title: config.KLIVVR_PICKS.title,
+    description: config.KLIVVR_PICKS.description,
   };
 };
