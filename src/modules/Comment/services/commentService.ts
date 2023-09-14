@@ -10,12 +10,9 @@ export class CommentService {
 
   async findManyWithPagination(
     query: Prisma.CommentWhereInput,
-    options: {
-      pageNumber: number;
-      pageSize: number;
-    },
+    options: { pageNumber: number; pageSize: number },
   ) {
-    return await this.commentRepo.findManyWithPagination(query, { ...options });
+    return await this.commentRepo.findManyWithPagination(query, options);
   }
 
   async findOne(query: Prisma.CommentWhereUniqueInput) {
