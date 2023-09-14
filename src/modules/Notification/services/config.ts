@@ -27,6 +27,14 @@ export const config = {
     title: 'Klivvr Picks',
     description: 'This week picks are posted check it out!',
   },
+  LIKE: {
+    title: 'New Like',
+    description: `{name} liked your post`,
+  },
+  COMMENT: {
+    title: 'New Comment',
+    description: `{name} commented on your post`,
+  },
 };
 
 export const getEventNotificationPayload = (args: {
@@ -55,5 +63,19 @@ export const getPicksNotificationPayload = () => {
   return {
     title: config.KLIVVR_PICKS.title,
     description: config.KLIVVR_PICKS.description,
+  };
+};
+
+export const getLikeNotificationPayload = (args: { name: string }) => {
+  return {
+    title: config.LIKE.title,
+    description: config.LIKE.description.replace('{name}', args.name),
+  };
+};
+
+export const getCommentNotificationPayload = (args: { name: string }) => {
+  return {
+    title: config.COMMENT.title,
+    description: config.COMMENT.description.replace('{name}', args.name),
   };
 };
