@@ -6,7 +6,7 @@ import { novuService } from '../../Novu';
 export class DeviceTokenService {
   constructor(private readonly deviceTokenRepo: DeviceTokenRepo) {}
 
-  readonly updateDeviceTokenSchema = z
+  readonly upsertDeviceTokenSchema = z
     .object({
       token: z.string(),
       deviceType: z.enum(['ANDROID', 'IOS']),

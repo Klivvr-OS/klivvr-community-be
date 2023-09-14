@@ -7,7 +7,7 @@ const router = express.Router();
 router.put(
   '/',
   endpoint(async (req, res) => {
-    const deviceToken = deviceTokenService.updateDeviceTokenSchema.parse(
+    const deviceToken = deviceTokenService.upsertDeviceTokenSchema.parse(
       req.body,
     );
     const userId = req.user?.id;
