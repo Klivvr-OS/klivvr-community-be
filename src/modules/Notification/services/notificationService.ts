@@ -1,7 +1,7 @@
 import { Prisma, Event } from '@prisma/client';
 import { NotificationRepo, notificationRepo } from '../repos/notificationRepo';
 import { eventService, userService, novuService } from '../../../modules';
-import { getNotificationPayload } from './config';
+import { getEventNotificationPayload } from './config';
 
 export class NotificationService {
   constructor(private readonly notificationRepo: NotificationRepo) {}
@@ -11,15 +11,12 @@ export class NotificationService {
   }
 
   async sendEventsNotifications() {
-    const todayEvents = (await eventService.findTodayEvents({
-      pageNumber: 1,
-      pageSize: 100,
-    })) as Event[];
+    const todayEvents = (await eventService.findTodayEvents()) as Event[];
     const users = await userService.findUsersDeviceToken();
     for (const event of todayEvents) {
       for (const user of users) {
         const isCurrentUser = event.userId === user.id;
-        const { title, description } = getNotificationPayload({
+        const { title, description } = getEventNotificationPayload({
           name: event.name,
           isCurrentUser,
           eventType: event.eventType,

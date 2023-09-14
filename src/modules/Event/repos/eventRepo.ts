@@ -5,16 +5,6 @@ import prisma from '../../../database/client';
 export class EventRepo {
   constructor(private readonly client: PrismaClient) {}
 
-  async findManyWithPagination(
-    query: Prisma.EventWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.client.event.findMany({
-      where: query,
-      ...paginate(options),
-    });
-  }
-
   async findOne(
     query: Prisma.EventWhereUniqueInput,
     options?: { select: Prisma.EventSelect },
@@ -47,8 +37,7 @@ export class EventRepo {
     `;
   }
 
-  async findTodayEvents(options: { pageNumber: number; pageSize: number }) {
-    const { skip, take } = paginate(options);
+  async findTodayEvents() {
     return await this.client.$queryRaw`
         SELECT
             "id",
@@ -63,10 +52,6 @@ export class EventRepo {
             DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
             AND
             DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
-        LIMIT
-            ${take}
-        OFFSET
-            ${skip}
     `;
   }
 

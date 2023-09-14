@@ -5,13 +5,6 @@ import { CustomError } from '../../../middlewares';
 export class EventService {
   constructor(private readonly eventRepo: EventRepo) {}
 
-  async findManyWithPagination(
-    query: Prisma.EventWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.eventRepo.findManyWithPagination(query, options);
-  }
-
   async findOne(
     query: Prisma.EventWhereUniqueInput,
     options?: { select: Prisma.EventSelect },
@@ -32,8 +25,8 @@ export class EventService {
     return await this.eventRepo.findThisWeekEvents(options);
   }
 
-  async findTodayEvents(options: { pageNumber: number; pageSize: number }) {
-    return await this.eventRepo.findTodayEvents(options);
+  async findTodayEvents() {
+    return await this.eventRepo.findTodayEvents();
   }
 
   async findManyByUserId(
