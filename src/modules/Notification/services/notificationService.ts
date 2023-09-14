@@ -1,6 +1,7 @@
 import { Prisma, Event } from '@prisma/client';
 import { NotificationRepo, notificationRepo } from '../repos/notificationRepo';
 import { eventService, userService, novuService } from '../../../modules';
+import { getNotificationPayload } from './config';
 
 export class NotificationService {
   constructor(private readonly notificationRepo: NotificationRepo) {}
@@ -10,54 +11,29 @@ export class NotificationService {
   }
 
   async sendEventsNotifications() {
-    const events = (await eventService.findThisWeekEvents({
+    const todayEvents = (await eventService.findTodayEvents({
       pageNumber: 1,
-      pageSize: 10,
+      pageSize: 100,
     })) as Event[];
-    const todayEvents = events.filter((event) => {
-      return eventService.isEventToday(new Date(event.date));
-    });
     const users = await userService.findUsersDeviceToken();
     for (const event of todayEvents) {
       for (const user of users) {
-        let title = '',
-          description = '';
-        if (
-          (user.id === event.userId && event.eventType === 'BIRTHDAY') ||
-          (user.id === event.userId && event.eventType === 'ANNIVERSARY')
-        ) {
-          title = `Today is your ${event.eventType.toLowerCase()} 🎉`;
-          description = `Happy ${event.eventType.toLowerCase()} ${
-            eventService.convertEventStringsToTitleAndType(
-              event.name,
-              event.eventType,
-            ).eventTitle
-          }!`;
-        } else if (user.id === event.userId) {
-          return;
-        } else if (
-          event.eventType === 'BIRTHDAY' ||
-          event.eventType === 'ANNIVERSARY'
-        ) {
-          title = `Today is ${event.name} 🎉`;
-          description = `Don't miss to wish ${
-            eventService.convertEventStringsToTitleAndType(
-              event.name,
-              event.eventType,
-            ).eventTitle
-          } a happy ${
-            eventService.convertEventStringsToTitleAndType(
-              event.name,
-              event.eventType,
-            ).newType
-          }!`;
-        }
+        const isCurrentUser = event.userId === user.id;
+        const { title, description } = getNotificationPayload({
+          name: event.name,
+          isCurrentUser,
+          eventType: event.eventType,
+        });
         await Promise.all([
           novuService.triggerNotification(
             { title, description },
             user.id.toString(),
           ),
-          this.createOne({ title, description, userId: user.id }),
+          this.createOne({
+            title,
+            description,
+            userId: user.id,
+          }),
         ]);
       }
     }
