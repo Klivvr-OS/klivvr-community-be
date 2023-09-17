@@ -22,6 +22,10 @@ export class DeviceTokenService {
       novuService.setFcmDeviceToken(args.userId.toString(), args.token),
     ]);
   }
+
+  async findUsersDeviceToken() {
+    return await this.deviceTokenRepo.findUsersDeviceToken();
+  }
 }
 
 export const deviceTokenService = new DeviceTokenService(deviceTokenRepo);
