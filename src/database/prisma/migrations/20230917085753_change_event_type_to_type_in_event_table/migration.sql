@@ -6,5 +6,5 @@
 
 */
 -- AlterTable
-ALTER TABLE "Event" DROP COLUMN "eventType",
-ADD COLUMN     "type" "EventType" NOT NULL;
+ALTER TABLE "Event" RENAME COLUMN "eventType" TO "type",
+ALTER TABLE "Event" ALTER COLUMN "type" SET NOT NULL;
