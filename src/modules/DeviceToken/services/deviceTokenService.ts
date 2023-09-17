@@ -23,8 +23,8 @@ export class DeviceTokenService {
     ]);
   }
 
-  async findUsersDeviceToken() {
-    return await this.deviceTokenRepo.findUsersDeviceToken();
+  async findMany() {
+    return await this.deviceTokenRepo.findMany();
   }
 }
 

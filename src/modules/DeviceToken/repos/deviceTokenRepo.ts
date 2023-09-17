@@ -15,7 +15,7 @@ export class DeviceTokenRepo {
     });
   }
 
-  async findUsersDeviceToken() {
+  async findMany() {
     return await this.client.deviceToken.findMany({
       select: { token: true, userId: true },
     });

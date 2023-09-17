@@ -134,8 +134,7 @@ router.post(
       nomineeId: userId as number,
     });
     const { title, description } = getPicksNotificationPayload();
-    const usersWithDeviceTokens =
-      await deviceTokenService.findUsersDeviceToken();
+    const usersWithDeviceTokens = await deviceTokenService.findMany();
     for (const user of usersWithDeviceTokens) {
       if (user.userId !== userId) {
         await Promise.all([
