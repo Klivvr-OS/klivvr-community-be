@@ -110,10 +110,6 @@ export class UserService {
     return await this.userRepo.findManyWithPagination(query, options);
   }
 
-  async findUsersDeviceToken() {
-    return await this.userRepo.findUsersDeviceToken();
-  }
-
   async findOne(
     args: Prisma.UserWhereInput,
     options?: { select: Prisma.UserSelect },
@@ -126,23 +122,13 @@ export class UserService {
     args: Prisma.UserUncheckedUpdateInput,
   ) {
     const updatedUser = await this.userRepo.updateOne(query, args);
-    const events = await eventService.findManyByUserId({
-      userId: updatedUser.id,
-    });
-    const userPreviousBirthdayEvent = events.find(
-      (e) => e.eventType === 'BIRTHDAY',
-    );
-    const userPreviousAnniversaryEvent = events.find(
-      (e) => e.eventType === 'ANNIVERSARY',
-    );
     if (updatedUser.birthdate) {
       await eventService.upsertOne(
-        { id: userPreviousBirthdayEvent?.id || 0 },
+        { id: updatedUser.id, type: 'BIRTHDAY' },
         {
           create: {
-            name:
-              updatedUser.firstName + ' ' + updatedUser.lastName + ' Birthday',
-            eventType: 'BIRTHDAY',
+            name: updatedUser.firstName + ' ' + updatedUser.lastName,
+            type: 'BIRTHDAY',
             image: updatedUser.image,
             date: updatedUser.birthdate,
             userId: updatedUser.id,
@@ -156,15 +142,11 @@ export class UserService {
 
     if (updatedUser?.hiringDate) {
       await eventService.upsertOne(
-        { id: userPreviousAnniversaryEvent?.id || 0 },
+        { id: updatedUser.id, type: 'ANNIVERSARY' },
         {
           create: {
-            name:
-              updatedUser.firstName +
-              ' ' +
-              updatedUser.lastName +
-              ' Anniversary',
-            eventType: 'ANNIVERSARY',
+            name: updatedUser.firstName + ' ' + updatedUser.lastName,
+            type: 'ANNIVERSARY',
             image: updatedUser.image,
             date: updatedUser.hiringDate,
             userId: updatedUser.id,

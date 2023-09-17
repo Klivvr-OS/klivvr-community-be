@@ -27,19 +27,6 @@ export class UserRepo {
     });
   }
 
-  async findUsersDeviceToken() {
-    return await this.prisma.user.findMany({
-      select: {
-        id: true,
-        DeviceToken: {
-          select: {
-            token: true,
-          },
-        },
-      },
-    });
-  }
-
   async findOne(
     query: Prisma.UserWhereInput,
     options?: { select: Prisma.UserSelect },
