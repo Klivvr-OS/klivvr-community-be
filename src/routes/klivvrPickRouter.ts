@@ -11,7 +11,11 @@ import { requestQueryPaginationSchema } from '../helpers';
 import { klivvrPickService } from '../modules/KilvvrPick';
 import { klivvrPickNomineeService } from '../modules/KlivvrPickNominee';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
-import { notificationService, novuService, userService } from '../modules';
+import {
+  deviceTokenService,
+  notificationService,
+  novuService,
+} from '../modules';
 import {
   getKlivvrPickNominationPayload,
   getPicksNotificationPayload,
@@ -130,18 +134,19 @@ router.post(
       nomineeId: userId as number,
     });
     const { title, description } = getPicksNotificationPayload();
-    const usersWithDeviceTokens = await userService.findUsersDeviceToken();
+    const usersWithDeviceTokens =
+      await deviceTokenService.findUsersDeviceToken();
     for (const user of usersWithDeviceTokens) {
-      if (user.id !== userId) {
+      if (user.userId !== userId) {
         await Promise.all([
           novuService.triggerNotification(
             { title, description },
-            user.id.toString(),
+            user.userId.toString(),
           ),
           notificationService.createOne({
             title,
             description,
-            userId: user.id,
+            userId: user.userId,
           }),
         ]);
       }
