@@ -211,7 +211,6 @@ router.post(
     if (!post) {
       throw new CustomError('Post not found', 404);
     }
-    const user = await userService.findOne({ id: post.userId });
     const userWhoCommented = await userService.findOne({
       id: req.user?.id as number,
     });
@@ -222,7 +221,7 @@ router.post(
       userId: userId as number,
       postId,
     });
-    if (user && userWhoCommented) {
+    if (userWhoCommented) {
       const { title, description } = getCommentNotificationPayload({
         name: `${userWhoCommented.firstName} ${userWhoCommented.lastName}`,
       });
@@ -232,12 +231,12 @@ router.post(
             title,
             description,
           },
-          user.id.toString(),
+          post.userId.toString(),
         ),
         notificationService.createOne({
           title,
           description,
-          userId: user.id,
+          userId: post.userId,
         }),
       ]);
     }
@@ -252,15 +251,13 @@ router.get(
       req.query,
     );
     const postId = Number(req.params.postId);
-    const post = await postService.findOne({ id: postId });
-    if (!post) {
-      throw new CustomError('Post not found', 404);
-    }
     const postComments = await commentService.findManyWithPagination(
       { postId },
       { pageNumber, pageSize },
     );
-    res.status(200).json({ post: post, comments: postComments });
+    res
+      .status(200)
+      .json({ message: 'Comments fetched successfully', data: postComments });
   }),
 );
 
@@ -282,33 +279,14 @@ router.put(
     }
 
     const { content } = postService.updateCommentSchema.parse(req.body);
-    const updatedCommentObject = await commentService.updateOne(
+    const updatedComment = await commentService.updateOne(
       { id: commentId },
       { content },
     );
 
-    res.status(200).json({
-      message: 'Comment updated successfully',
-      updatedCommentObject,
-    });
-  }),
-);
-
-router.get(
-  '/:postId/comments/:commentId',
-  endpoint(async (req, res) => {
-    const postId = Number(req.params.postId);
-    const commentId = Number(req.params.commentId);
-
-    const comment = await commentService.findOne({
-      id: commentId,
-      postId,
-    });
-    if (!comment) {
-      throw new CustomError('Comment not found', 404);
-    }
-
-    res.status(200).json(comment);
+    res
+      .status(200)
+      .json({ message: 'Comment updated successfully', updatedComment });
   }),
 );
 
