@@ -1,11 +1,11 @@
 export const config = {
   OTHER_USERS: {
     BIRTHDAY: {
-      title: 'Today is {name} 🎉',
+      title: 'Today is {name} birthday 🎉',
       description: `Don't miss to celebrate with us!`,
     },
     ANNIVERSARY: {
-      title: 'Today is {name} 🎉',
+      title: 'Today is {name} anniversary 🎉',
       description: `Don't miss to celebrate with us!`,
     },
   },
@@ -40,14 +40,14 @@ export const config = {
 export const getEventNotificationPayload = (args: {
   name: string;
   isCurrentUser: boolean;
-  eventType: 'BIRTHDAY' | 'ANNIVERSARY';
+  type: 'BIRTHDAY' | 'ANNIVERSARY';
 }) => {
   return {
     title: config[args.isCurrentUser ? 'CURRENT_USER' : 'OTHER_USERS'][
-      args.eventType
+      args.type
     ].title.replace('{name}', args.name),
     description: config[args.isCurrentUser ? 'CURRENT_USER' : 'OTHER_USERS'][
-      args.eventType
+      args.type
     ].description.replace('{name}', args.name),
   };
 };
