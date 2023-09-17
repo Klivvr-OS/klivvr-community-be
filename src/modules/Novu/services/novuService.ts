@@ -19,6 +19,10 @@ export class NovuService {
     });
   }
 
+  async removeFcmDeviceToken(id: string) {
+    await this.novu.subscribers.deleteCredentials(id, PushProviderIdEnum.FCM);
+  }
+
   async triggerNotification(
     payload: { title: string; description: string },
     id: string,
