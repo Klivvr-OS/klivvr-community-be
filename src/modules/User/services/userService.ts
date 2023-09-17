@@ -1,6 +1,6 @@
 import { userRepo, type UserRepo } from '../repos/userRepo';
 import { Prisma } from '@prisma/client';
-import { sendingEmails } from '../../../mailers/sendEmail';
+import { sendVerificationCodeEmail } from '../../../mailers/sendEmail';
 import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
@@ -27,8 +27,6 @@ export class UserService {
       .trim(),
     password: z.string().min(6, { message: 'Password is too short' }).trim(),
     image: z.string(),
-    birthdate: z.coerce.date().optional(),
-    hiringDate: z.coerce.date().optional(),
   });
 
   readonly verifyUserSchema = z.object({
@@ -87,7 +85,7 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
-    await sendingEmails(
+    await sendVerificationCodeEmail(
       {
         to: args.email,
         subject: sendGridSubject,
@@ -276,7 +274,7 @@ export class UserService {
       throw new CustomError('Forbidden', 403);
     }
     const code = generateCode();
-    await sendingEmails(
+    await sendVerificationCodeEmail(
       {
         to: user.email,
         subject: sendGridSubject,
