@@ -64,7 +64,7 @@ export class PostService {
     userId?: number,
   ) {
     return await this.postRepo.postsWithLikesAndComments(
-      { ...options },
+      options,
       postId,
       userId,
     );
