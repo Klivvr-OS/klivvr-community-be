@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, Event } from '@prisma/client';
 import { paginate } from '../../../helpers';
 import prisma from '../../../database/client';
 
@@ -37,7 +37,7 @@ export class EventRepo {
     `;
   }
 
-  async findTodayEvents() {
+  async findTodayEvents(): Promise<Event[]> {
     return await this.client.$queryRaw`
         SELECT
             "id",

@@ -1,4 +1,4 @@
-import { Prisma, Event } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { NotificationRepo, notificationRepo } from '../repos/notificationRepo';
 import {
   eventService,
@@ -15,7 +15,7 @@ export class NotificationService {
   }
 
   async sendEventsNotifications() {
-    const todayEvents = (await eventService.findTodayEvents()) as Event[];
+    const todayEvents = await eventService.findTodayEvents();
     const users = await deviceTokenService.findUsersDeviceToken();
     for (const event of todayEvents) {
       for (const user of users) {
