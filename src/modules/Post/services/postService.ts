@@ -23,12 +23,11 @@ export class PostService {
     content: z.string().nonempty({ message: 'Content is required' }),
   });
 
-  readonly updateCommentSchema = z.object({
-    content: z
-      .string()
-      .nonempty({ message: 'Content cannot be empty' })
-      .optional(),
-  });
+  readonly updateCommentSchema = z
+    .object({
+      content: z.string(),
+    })
+    .required();
 
   async createOne(args: Prisma.PostUncheckedCreateInput) {
     return await this.postRepo.createOne(args);
