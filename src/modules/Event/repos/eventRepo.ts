@@ -19,7 +19,7 @@ export class EventRepo {
             "id",
             "name",
             "image",
-            "eventType",
+            "type",
             "userId",
             TO_CHAR("date", 'YYYY-MM-DD') AS "date"
         FROM
@@ -43,7 +43,7 @@ export class EventRepo {
             "id",
             "name",
             "image",
-            "eventType",
+            "type",
             "userId",
             TO_CHAR("date", 'YYYY-MM-DD') AS "date"
         FROM
@@ -53,16 +53,6 @@ export class EventRepo {
             AND
             DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
     `;
-  }
-
-  async findManyByUserId(
-    query: { userId: number },
-    options?: { select: Prisma.EventSelect },
-  ) {
-    return await this.client.event.findMany({
-      where: { userId: query.userId },
-      ...options,
-    });
   }
 
   async upsertOne(
