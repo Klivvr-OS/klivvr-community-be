@@ -16,7 +16,7 @@ export class NotificationService {
 
   async sendEventsNotifications() {
     const todayEvents = await eventService.findTodayEvents();
-    const users = await deviceTokenService.findUsersDeviceToken();
+    const users = await deviceTokenService.findMany();
     for (const event of todayEvents) {
       for (const user of users) {
         const isCurrentUser = event.userId === user.userId;
