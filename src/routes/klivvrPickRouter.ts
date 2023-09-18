@@ -11,6 +11,15 @@ import { requestQueryPaginationSchema } from '../helpers';
 import { klivvrPickService } from '../modules/KilvvrPick';
 import { klivvrPickNomineeService } from '../modules/KlivvrPickNominee';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
+import {
+  deviceTokenService,
+  notificationService,
+  novuService,
+} from '../modules';
+import {
+  getKlivvrPickNominationPayload,
+  getPicksNotificationPayload,
+} from '../modules/Notification/services/config';
 
 const router = express.Router();
 
@@ -24,6 +33,14 @@ router.post(
       nomineeId,
       nominatorUserId,
     );
+    const { title, description } = getKlivvrPickNominationPayload();
+    await Promise.all([
+      novuService.triggerNotification(
+        { title, description },
+        nomineeId.toString(),
+      ),
+      notificationService.createOne({ title, description, userId: nomineeId }),
+    ]);
     res.status(201).json(klivvrPickNomineeObject);
   }),
 );
@@ -116,6 +133,23 @@ router.post(
       ...validatedKlivvrPick,
       nomineeId: userId as number,
     });
+    const { title, description } = getPicksNotificationPayload();
+    const usersWithDeviceTokens = await deviceTokenService.findMany();
+    for (const user of usersWithDeviceTokens) {
+      if (user.userId !== userId) {
+        await Promise.all([
+          novuService.triggerNotification(
+            { title, description },
+            user.userId.toString(),
+          ),
+          notificationService.createOne({
+            title,
+            description,
+            userId: user.userId,
+          }),
+        ]);
+      }
+    }
     res.status(200).json(klivvrPickObject);
   }),
 );

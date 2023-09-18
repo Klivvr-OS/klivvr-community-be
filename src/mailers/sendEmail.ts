@@ -18,7 +18,7 @@ export async function sendEmail(
   }
 }
 
-export async function sendingEmails(
+export async function sendVerificationCodeEmail(
   args: {
     to: string;
     subject: string;

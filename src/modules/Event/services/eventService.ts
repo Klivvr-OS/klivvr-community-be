@@ -1,41 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { eventRepo, EventRepo } from '../repos/eventRepo';
-import { z } from 'zod';
 import { CustomError } from '../../../middlewares';
 
 export class EventService {
   constructor(private readonly eventRepo: EventRepo) {}
-
-  readonly createEventSchema = z.object({
-    name: z.string().trim().nonempty(),
-    date: z.coerce.date(),
-    startTime: z.coerce.date().optional(),
-    endTime: z.coerce.date().optional(),
-    image: z.string().optional(),
-    eventType: z.enum(['BIRTHDAY', 'ANNIVERSARY', 'WEDDING', 'FAREWELL']),
-  });
-
-  readonly updateEventSchema = z.object({
-    name: z.string().trim().nonempty().optional(),
-    eventType: z
-      .enum(['BIRTHDAY', 'ANNIVERSARY', 'WEDDING', 'FAREWELL'])
-      .optional(),
-    Date: z.coerce.date().optional(),
-    startTime: z.coerce.date().optional(),
-    endTime: z.coerce.date().optional(),
-    image: z.string().optional(),
-  });
-
-  async createOne(args: Prisma.EventUncheckedCreateInput) {
-    return await this.eventRepo.createOne(args);
-  }
-
-  async findManyWithPagination(
-    query: Prisma.EventWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.eventRepo.findManyWithPagination(query, options);
-  }
 
   async findOne(
     query: Prisma.EventWhereUniqueInput,
@@ -57,22 +25,18 @@ export class EventService {
     return await this.eventRepo.findThisWeekEvents(options);
   }
 
-  async findManyByUserId(
-    query: { userId: number },
-    options?: { select: Prisma.EventSelect },
-  ) {
-    return await this.eventRepo.findManyByUserId(query, options);
+  async findTodayEvents() {
+    return await this.eventRepo.findTodayEvents();
   }
 
-  async updateOne(
+  async upsertOne(
     query: Prisma.EventWhereUniqueInput,
-    args: Prisma.EventUpdateInput,
+    options: {
+      create: Prisma.EventUncheckedCreateInput;
+      update: Prisma.EventUncheckedUpdateInput;
+    },
   ) {
-    return await this.eventRepo.updateOne(query, args);
-  }
-
-  async deleteOne(query: Prisma.EventWhereUniqueInput) {
-    return await this.eventRepo.deleteOne(query);
+    return await this.eventRepo.upsertOne(query, options);
   }
 }
 

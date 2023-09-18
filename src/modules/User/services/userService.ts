@@ -1,6 +1,6 @@
 import { userRepo, type UserRepo } from '../repos/userRepo';
 import { Prisma } from '@prisma/client';
-import { sendingEmails } from '../../../mailers/sendEmail';
+import { sendVerificationCodeEmail } from '../../../mailers/sendEmail';
 import { generateCode } from '../../../helpers/generateCode';
 import { CustomError } from '../../../middlewares';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { sendGridSubject, sendGridText, sendGridHTML } from '../../../config';
 import { PasswordService, expiryDate } from '../../../helpers';
 import { eventService } from '../../Event';
+import { novuService } from '../../Novu';
 
 const ACCESS_TOKEN_EXPIRY_TIME = '15m';
 const REFRESH_TOKEN_EXPIRY_TIME = '1w';
@@ -26,8 +27,6 @@ export class UserService {
       .trim(),
     password: z.string().min(6, { message: 'Password is too short' }).trim(),
     image: z.string(),
-    birthdate: z.coerce.date().optional(),
-    hiringDate: z.coerce.date().optional(),
   });
 
   readonly verifyUserSchema = z.object({
@@ -86,28 +85,7 @@ export class UserService {
       password: hashedPassword,
       verificationCode: code,
     });
-    let createBirthdayEvent;
-    let createAnniversaryEvent;
-    if (createdUser.birthdate) {
-      createBirthdayEvent = await eventService.createOne({
-        name: createdUser.firstName + ' ' + createdUser.lastName + ' Birthday',
-        date: createdUser.birthdate,
-        eventType: 'BIRTHDAY',
-        userId: createdUser.id,
-        image: createdUser.image,
-      });
-    }
-    if (createdUser.hiringDate) {
-      createAnniversaryEvent = await eventService.createOne({
-        name:
-          createdUser.firstName + ' ' + createdUser.lastName + ' Anniversary',
-        date: createdUser.hiringDate,
-        eventType: 'ANNIVERSARY',
-        userId: createdUser.id,
-        image: createdUser.image,
-      });
-    }
-    await sendingEmails(
+    await sendVerificationCodeEmail(
       {
         to: args.email,
         subject: sendGridSubject,
@@ -119,7 +97,8 @@ export class UserService {
     if (createdUser == null) {
       throw new CustomError('Internal Server Error', 500);
     }
-    return { createdUser, createBirthdayEvent, createAnniversaryEvent };
+    await novuService.identifyUser(createdUser.id.toString());
+    return createdUser;
   }
 
   async findManyWithPagination(
@@ -140,38 +119,43 @@ export class UserService {
     query: Prisma.UserWhereUniqueInput,
     args: Prisma.UserUncheckedUpdateInput,
   ) {
-    let createBirthdayEvent;
-    let createAnniversaryEvent;
     const updatedUser = await this.userRepo.updateOne(query, args);
-    const event = await eventService.findManyByUserId({
-      userId: updatedUser.id,
-    });
-    const userPreviousBirthdayEvent = event.find(
-      (e) => e.eventType === 'BIRTHDAY',
-    );
-    const userPreviousAnniversaryEvent = event.find(
-      (e) => e.eventType === 'ANNIVERSARY',
-    );
-    if (updatedUser?.birthdate && !userPreviousBirthdayEvent) {
-      createBirthdayEvent = await eventService.createOne({
-        name: updatedUser.firstName + ' ' + updatedUser.lastName + ' Birthday',
-        date: updatedUser.birthdate,
-        eventType: 'BIRTHDAY',
-        userId: updatedUser.id,
-        image: updatedUser.image,
-      });
+    if (updatedUser.birthdate) {
+      await eventService.upsertOne(
+        { id: updatedUser.id, type: 'BIRTHDAY' },
+        {
+          create: {
+            name: updatedUser.firstName + ' ' + updatedUser.lastName,
+            type: 'BIRTHDAY',
+            image: updatedUser.image,
+            date: updatedUser.birthdate,
+            userId: updatedUser.id,
+          },
+          update: {
+            date: updatedUser.birthdate,
+          },
+        },
+      );
     }
-    if (updatedUser?.hiringDate && !userPreviousAnniversaryEvent) {
-      createAnniversaryEvent = await eventService.createOne({
-        name:
-          updatedUser.firstName + ' ' + updatedUser.lastName + ' Anniversary',
-        date: updatedUser.hiringDate,
-        eventType: 'ANNIVERSARY',
-        userId: updatedUser.id,
-        image: updatedUser.image,
-      });
+
+    if (updatedUser?.hiringDate) {
+      await eventService.upsertOne(
+        { id: updatedUser.id, type: 'ANNIVERSARY' },
+        {
+          create: {
+            name: updatedUser.firstName + ' ' + updatedUser.lastName,
+            type: 'ANNIVERSARY',
+            image: updatedUser.image,
+            date: updatedUser.hiringDate,
+            userId: updatedUser.id,
+          },
+          update: {
+            date: updatedUser.hiringDate,
+          },
+        },
+      );
     }
-    return { updatedUser, createBirthdayEvent, createAnniversaryEvent };
+    return { updatedUser };
   }
 
   async checkVerificationCode(args: Prisma.UserWhereInput) {
@@ -290,7 +274,7 @@ export class UserService {
       throw new CustomError('Forbidden', 403);
     }
     const code = generateCode();
-    await sendingEmails(
+    await sendVerificationCodeEmail(
       {
         to: user.email,
         subject: sendGridSubject,

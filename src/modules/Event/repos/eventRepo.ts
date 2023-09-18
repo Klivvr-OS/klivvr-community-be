@@ -1,23 +1,9 @@
-import { Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient, Event } from '@prisma/client';
 import { paginate } from '../../../helpers';
 import prisma from '../../../database/client';
 
 export class EventRepo {
   constructor(private readonly client: PrismaClient) {}
-
-  async createOne(args: Prisma.EventUncheckedCreateInput) {
-    return await this.client.event.create({ data: args });
-  }
-
-  async findManyWithPagination(
-    query: Prisma.EventWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.client.event.findMany({
-      where: query,
-      ...paginate(options),
-    });
-  }
 
   async findOne(
     query: Prisma.EventWhereUniqueInput,
@@ -32,19 +18,18 @@ export class EventRepo {
         SELECT
             "id",
             "name",
-            "startTime",
-            "endTime",
             "image",
-            "eventType",
-            DATE_PART('year', current_date) || '-' || DATE_PART('month', "date") || '-' || DATE_PART('day', "date") AS "date"
+            "type",
+            "userId",
+            TO_CHAR("date", 'YYYY-MM-DD') AS "date"
         FROM
             "Event" 
         WHERE
-            DATE_PART('month', "date") = DATE_PART('month', current_date)
+            DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
             AND
-            DATE_PART('day', "date") = DATE_PART('day', current_date)
+            DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
             OR 
-            date(DATE_PART('year', current_date)||'-'||DATE_PART('month', "date")||'-'||DATE_PART('day', "date")) BETWEEN current_date AND current_date + interval '7 days'
+            date(DATE_PART('year', CURRENT_DATE)||'-'||DATE_PART('month', "date")||'-'||DATE_PART('day', "date")) BETWEEN CURRENT_DATE AND CURRENT_DATE + interval '7 days'
         LIMIT
             ${take}
         OFFSET
@@ -52,25 +37,36 @@ export class EventRepo {
     `;
   }
 
-  async findManyByUserId(
-    query: { userId: number },
-    options?: { select: Prisma.EventSelect },
-  ) {
-    return await this.client.event.findMany({
-      where: { userId: query.userId },
-      ...options,
-    });
+  async findTodayEvents(): Promise<Event[]> {
+    return await this.client.$queryRaw`
+        SELECT
+            "id",
+            "name",
+            "image",
+            "type",
+            "userId",
+            TO_CHAR("date", 'YYYY-MM-DD') AS "date"
+        FROM
+            "Event" 
+        WHERE
+            DATE_PART('month', "date") = DATE_PART('month', CURRENT_DATE)
+            AND
+            DATE_PART('day', "date") = DATE_PART('day', CURRENT_DATE)
+    `;
   }
 
-  async updateOne(
+  async upsertOne(
     query: Prisma.EventWhereUniqueInput,
-    args: Prisma.EventUpdateInput,
+    options: {
+      create: Prisma.EventUncheckedCreateInput;
+      update: Prisma.EventUncheckedUpdateInput;
+    },
   ) {
-    return await this.client.event.update({ where: query, data: args });
-  }
-
-  async deleteOne(query: Prisma.EventWhereUniqueInput) {
-    return await this.client.event.delete({ where: query });
+    return await this.client.event.upsert({
+      where: query,
+      create: options.create,
+      update: options.update,
+    });
   }
 }
 

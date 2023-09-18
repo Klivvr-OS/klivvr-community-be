@@ -23,6 +23,12 @@ export class PostService {
     content: z.string().nonempty({ message: 'Content is required' }),
   });
 
+  readonly updateCommentSchema = z
+    .object({
+      content: z.string(),
+    })
+    .required();
+
   async createOne(args: Prisma.PostUncheckedCreateInput) {
     return await this.postRepo.createOne(args);
   }
@@ -49,40 +55,19 @@ export class PostService {
     return await this.postRepo.deleteOne(query);
   }
 
-  async addLike(args: Prisma.LikeUncheckedCreateInput) {
-    return await this.postRepo.addLike(args);
-  }
-
-  async findLike(query: Prisma.LikeWhereInput) {
-    return await this.postRepo.findLike(query);
-  }
-
-  async unlike(args: Prisma.LikeWhereUniqueInput) {
-    return await this.postRepo.unlike(args);
-  }
-
-  async countLikesAndComments(
+  async postsWithLikesAndComments(
     options: {
       pageNumber: number;
       pageSize: number;
     },
     postId?: number,
+    userId?: number,
   ) {
-    return await this.postRepo.countLikesAndComments({ ...options }, postId);
-  }
-
-  async createComment(args: Prisma.CommentUncheckedCreateInput) {
-    return await this.postRepo.createComment(args);
-  }
-
-  async findPostComments(
-    query: Prisma.CommentWhereInput,
-    options: {
-      pageNumber: number;
-      pageSize: number;
-    },
-  ) {
-    return await this.postRepo.findPostComments(query, { ...options });
+    return await this.postRepo.postsWithLikesAndComments(
+      options,
+      postId,
+      userId,
+    );
   }
 }
 

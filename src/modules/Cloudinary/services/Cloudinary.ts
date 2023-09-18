@@ -20,9 +20,9 @@ export class Cloudinary {
       const cloudinaryImageUploadResponseData =
         await cloudinary.uploader.upload(imageToUpload);
 
-      const { url } = cloudinaryImageUploadResponseData;
+      const { secure_url } = cloudinaryImageUploadResponseData;
 
-      if (!url) {
+      if (!secure_url) {
         return {
           isSuccess: false,
           message:
@@ -35,7 +35,7 @@ export class Cloudinary {
         isSuccess: true,
         message: 'Successfully uploaded image.',
         statusCode: 200,
-        imageURL: url,
+        imageURL: secure_url,
       };
     } catch (error) {
       return {

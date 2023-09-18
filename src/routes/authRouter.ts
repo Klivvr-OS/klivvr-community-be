@@ -1,10 +1,11 @@
 import express from 'express';
-import { resetPasswordCodeService, userService } from '../modules';
+import { novuService, resetPasswordCodeService, userService } from '../modules';
 import { multerUpload } from '../middlewares/Multer';
 import { cloudinaryInstance } from '../modules/Cloudinary/services/Cloudinary';
 import { handleMulterError } from '../middlewares/Multer';
 import { endpoint } from '../core/endpoint';
 import { secretAccessKey, secretRefreshKey } from '../config';
+import { isAuth } from '../middlewares';
 
 const router = express.Router();
 
@@ -134,6 +135,16 @@ router.post(
       resetPasswordCode,
     );
     res.status(200).json({ message: 'Password reset successfully' });
+  }),
+);
+
+router.post(
+  '/logout',
+  isAuth,
+  endpoint(async (req, res) => {
+    const userId = req.user?.id as number;
+    await novuService.removeFcmDeviceToken(userId.toString());
+    res.status(200).json({ message: 'User logged out successfully' });
   }),
 );
 

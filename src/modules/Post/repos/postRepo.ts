@@ -35,77 +35,33 @@ export class PostRepo {
     return await this.client.post.delete({ where: query });
   }
 
-  async addLike(args: Prisma.LikeUncheckedCreateInput) {
-    return await this.client.like.create({ data: args });
-  }
-
-  async findLike(query: Prisma.LikeWhereInput) {
-    return await this.client.like.findFirst({ where: query });
-  }
-
-  async unlike(args: Prisma.LikeWhereUniqueInput) {
-    return await this.client.like.delete({ where: args });
-  }
-
-  async countLikesAndComments(
+  async postsWithLikesAndComments(
     options: { pageNumber: number; pageSize: number },
     postId?: number,
+    userId?: number,
   ) {
     const { skip, take } = paginate(options);
     const postIdQuery = postId
       ? Prisma.sql`and p.id = ${postId}`
       : Prisma.sql``;
-    return await this.client.$queryRaw`
-    select
-      p.*,
-      coalesce(l.likes::int, 0) as "likes",
-      coalesce(c.comments::int, 0) as "comments"
-    from
-      "Post" p
-    left join (
-      select
-        "postId",
-        COUNT(*) as "likes"
-      from
-        "Like"
-      group by
-        "postId"
-    ) l on
-      p.id = l."postId" 
-    left join (
-      select
-        "postId",
-        COUNT(*) as "comments"
-      from
-        "Comment"
-      group by
-        "postId"
-    ) c on
-      p.id = c."postId"
-    where true
-      ${postIdQuery}
-      Order by
-        "createdAt" DESC
-      LIMIT
-        ${take}
-      OFFSET
-        ${skip}
-    `;
-  }
-
-  async createComment(args: Prisma.CommentUncheckedCreateInput) {
-    return await this.client.comment.create({ data: args });
-  }
-
-  async findPostComments(
-    query: Prisma.CommentWhereInput,
-    options: { pageNumber: number; pageSize: number },
-  ) {
-    return await this.client.comment.findMany({
-      where: query,
-      ...paginate(options),
-      orderBy: { createdAt: 'desc' },
-    });
+    const query = await Promise.all([
+      this.client.$queryRaw`
+        SELECT p.*, u."firstName", u."lastName", u.image AS "userImage", 
+        COUNT(DISTINCT l."id")::int AS likes, COUNT(DISTINCT c."id")::int AS comments,
+        CASE WHEN l."userId" = ${userId} THEN true ELSE false END AS "isLiked"
+        FROM "Post" p 
+        LEFT JOIN "Like" l ON p.id = l."postId" 
+        LEFT JOIN "Comment" c ON p.id = c."postId" 
+        LEFT JOIN "User" u ON p."userId" = u.id
+        WHERE true ${postIdQuery}
+        GROUP BY p.id, u.id, l."userId"
+        ORDER BY p."createdAt" DESC
+        LIMIT ${take}
+        OFFSET ${skip}
+    `,
+      this.client.post.count({ where: { ...(postId ? { id: postId } : {}) } }),
+    ]);
+    return { posts: query[0], total: query[1] };
   }
 }
 
