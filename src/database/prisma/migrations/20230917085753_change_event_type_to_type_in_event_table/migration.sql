@@ -6,4 +6,4 @@
 
 */
 -- AlterTable
-ALTER TABLE "Event" RENAME COLUMN "eventType" TO "type",
+ALTER TABLE "Event" RENAME COLUMN "eventType" TO "type"
