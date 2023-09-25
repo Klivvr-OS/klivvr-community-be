@@ -46,29 +46,17 @@ export class PostRepo {
       : Prisma.sql``;
     const query = await Promise.all([
       this.client.$queryRaw`
-      WITH UserLikes AS (
-        SELECT "postId"
-        FROM "Like"
-        WHERE "userId" = ${userId}
-      )
-      SELECT
+      SELECT 
         p.*,
-        u."firstName",
-        u."lastName",
-        u.image AS "userImage",
-        COUNT(l.*)::int AS likes,
-        COUNT(c.*)::int AS comments,
-        CASE
-          WHEN ul."postId" IS NOT NULL THEN true
-          ELSE false
-        END AS "isLiked"
-      FROM "Post" p
+        u."firstName", u."lastName", u.image AS "userImage",
+      (SELECT COUNT(*)::INT FROM "Like" l  WHERE l."postId" = p.id) AS likes,
+      (SELECT COUNT(*)::INT FROM "Comment" c WHERE c."postId" = p.id ) AS comments,
+      (SELECT EXISTS(SELECT * FROM "Like" l WHERE l."userId" = ${userId} AND l."postId" = p.id))
+        AS "isLiked"
+      FROM "Post" p 
       JOIN "User" u ON p."userId" = u.id
-      LEFT JOIN "Like" l ON p.id = l."postId"
-      LEFT JOIN "Comment" c ON p.id = c."postId"
-      LEFT JOIN UserLikes ul ON p.id = ul."postId"
-      WHERE TRUE ${postIdQuery}
-      GROUP BY p.id, u.id, ul."postId"
+      WHERE true ${postIdQuery}
+      GROUP BY p.id, u.id
       ORDER BY p."createdAt" DESC
       LIMIT ${take}
       OFFSET ${skip};
