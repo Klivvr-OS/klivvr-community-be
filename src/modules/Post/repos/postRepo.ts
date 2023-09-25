@@ -46,18 +46,32 @@ export class PostRepo {
       : Prisma.sql``;
     const query = await Promise.all([
       this.client.$queryRaw`
-        SELECT p.*, u."firstName", u."lastName", u.image AS "userImage", 
-        COUNT(DISTINCT l."id")::int AS likes, COUNT(DISTINCT c."id")::int AS comments,
-        CASE WHEN l."userId" = ${userId} THEN true ELSE false END AS "isLiked"
-        FROM "Post" p 
-        LEFT JOIN "Like" l ON p.id = l."postId" 
-        LEFT JOIN "Comment" c ON p.id = c."postId" 
-        LEFT JOIN "User" u ON p."userId" = u.id
-        WHERE true ${postIdQuery}
-        GROUP BY p.id, u.id, l."userId"
-        ORDER BY p."createdAt" DESC
-        LIMIT ${take}
-        OFFSET ${skip}
+      WITH UserLikes AS (
+        SELECT "postId"
+        FROM "Like"
+        WHERE "userId" = ${userId}
+      )
+      SELECT
+        p.*,
+        u."firstName",
+        u."lastName",
+        u.image AS "userImage",
+        COUNT(l.*)::int AS likes,
+        COUNT(c.*)::int AS comments,
+        CASE
+          WHEN ul."postId" IS NOT NULL THEN true
+          ELSE false
+        END AS "isLiked"
+      FROM "Post" p
+      JOIN "User" u ON p."userId" = u.id
+      LEFT JOIN "Like" l ON p.id = l."postId"
+      LEFT JOIN "Comment" c ON p.id = c."postId"
+      LEFT JOIN UserLikes ul ON p.id = ul."postId"
+      WHERE TRUE ${postIdQuery}
+      GROUP BY p.id, u.id, ul."postId"
+      ORDER BY p."createdAt" DESC
+      LIMIT ${take}
+      OFFSET ${skip};
     `,
       this.client.post.count({ where: { ...(postId ? { id: postId } : {}) } }),
     ]);

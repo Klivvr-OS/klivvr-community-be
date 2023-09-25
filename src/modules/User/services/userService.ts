@@ -22,8 +22,9 @@ export class UserService {
     lastName: z.string().min(3, { message: 'Last name is too short' }).trim(),
     email: z
       .string()
-      .email({ message: 'Invalid email' }) //todo add endWith/regex for klivvr emails
+      .email({ message: 'Invalid email' })
       .toLowerCase()
+      .endsWith('@klivvr.com', { message: 'Email must be a Klivvr email' })
       .trim(),
     password: z.string().min(6, { message: 'Password is too short' }).trim(),
     image: z.string(),
@@ -58,9 +59,9 @@ export class UserService {
       .optional(),
     birthdate: z.coerce.date().optional(),
     interests: z.array(z.string()).optional(),
-    address: z.string().nonempty().optional(),
-    aboutMe: z.string().nonempty().optional(),
-    title: z.string().nonempty().optional(),
+    address: z.string().optional(),
+    aboutMe: z.string().optional(),
+    title: z.string().optional(),
     favoriteClubs: z.array(z.string()).optional(),
     preferredFoods: z.array(z.string()).optional(),
     hobbies: z.array(z.string()).optional(),

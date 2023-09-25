@@ -19,7 +19,7 @@ export class CommentRepo {
       include: {
         user: { select: { firstName: true, lastName: true, image: true } },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
